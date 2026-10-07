@@ -38,6 +38,27 @@ export function ServiceCard({ service, t, compact }: { service: Service; t: Dict
   );
 }
 
+/** Gold stage spotlight shown on hover (parent needs the `group` class). */
+export function Spotlight() {
+  return (
+    <>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 opacity-0 mix-blend-screen transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background:
+            "conic-gradient(from 180deg at 50% -10%, transparent 0deg 154deg, rgba(255,232,180,0.28) 166deg, rgba(255,240,205,0.5) 180deg, rgba(255,232,180,0.28) 194deg, transparent 206deg 360deg)",
+        }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: "radial-gradient(ellipse 50% 32% at 50% 20%, rgba(240,200,110,0.35), transparent 70%), radial-gradient(ellipse 50% 12% at 50% 99%, rgba(240,200,110,0.55), transparent 70%)" }}
+      />
+    </>
+  );
+}
+
 export function BarberPortrait({ barber, className, rounded }: { barber: Barber; className?: string; rounded?: boolean }) {
   if (!barber.photoUrl) return <MarbleTile seed={barber.slug} monogram={barber.name[0]!} caption={barber.title} className={className} rounded={rounded} />;
   // Cut-out photos sit on a crop of the black marble with a warm gold glow.
@@ -52,8 +73,9 @@ export function BarberPortrait({ barber, className, rounded }: { barber: Barber;
         alt={barber.name}
         fill
         sizes="(min-width: 1024px) 33vw, 100vw"
-        className={rounded ? "object-cover object-top" : "object-contain object-bottom"}
+        className={clsx(rounded ? "object-cover object-top" : "object-contain object-bottom", "transition duration-500 group-hover:brightness-110")}
       />
+      {!rounded && <Spotlight />}
     </div>
   );
 }

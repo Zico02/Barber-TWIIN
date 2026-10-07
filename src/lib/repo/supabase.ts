@@ -65,7 +65,7 @@ const toShop = (r: Row): Shop => ({
 const toBarber = (r: Row): Barber => ({
   id: r.id, slug: r.slug, name: r.name, title: r.title, bio: r.bio, specialties: r.specialties ?? [],
   experienceYears: r.experience_years, rating: Number(r.rating), reviewCount: r.review_count,
-  photoUrl: r.photo_url, introPhotoUrl: r.intro_photo_url ?? null, phone: r.phone ?? null, socials: r.socials ?? {}, active: r.active, delayMinutes: r.delay_minutes,
+  photoUrl: r.photo_url, introPhotoUrl: r.intro_photo_url ?? null, lineupPhotoUrl: r.lineup_photo_url ?? null, phone: r.phone ?? null, socials: r.socials ?? {}, active: r.active, delayMinutes: r.delay_minutes,
   sortOrder: r.sort_order,
   serviceIds: (r.barber_services ?? []).map((x: Row) => x.service_id),
   durationOverrides: Object.fromEntries(

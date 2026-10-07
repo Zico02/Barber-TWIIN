@@ -83,6 +83,7 @@ const barber = (n: number, slug: string, name: string, phone: string, specialtie
   rating: 0,
   reviewCount: 0,
   photoUrl: `/images/barbers/${slug}.webp`,
+  lineupPhotoUrl: null,
   introPhotoUrl: null, // add /images/barbers/<slug>-intro.webp (arms relaxed) to animate the arm cross
   phone,
   socials: {},
@@ -96,7 +97,7 @@ const barber = (n: number, slug: string, name: string, phone: string, specialtie
 export const seedBarbers: Barber[] = [
   barber(1, "reda", "Reda", "+212626941854", ["Taper", "Mullet", "Dégradé"]),
   barber(2, "nasro", "Nasro", "+212771357199", ["Coupe", "Barbe", "Contour"]),
-  barber(3, "ziko", "Ziko", "+212771539075", ["Fade", "Burst fade", "Coupe texturée"]),
+  { ...barber(3, "ziko", "Ziko", "+212771539075", ["Fade", "Burst fade", "Coupe texturée"]), lineupPhotoUrl: "/images/barbers/ziko-lineup.webp" },
 ];
 
 export const seedAvailability: AvailabilityRule[] = seedBarbers.flatMap((b) =>

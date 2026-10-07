@@ -109,6 +109,8 @@ export interface Barber {
   photoUrl: string | null;
   /** Optional "arms relaxed" photo: shown first in the lineup animation, then crossfades to photoUrl (arms crossed). */
   introPhotoUrl: string | null;
+  /** Optional framing for the homepage lineup (e.g. a waist-level crop of a full-length photo). */
+  lineupPhotoUrl: string | null;
   /** Personal phone (E.164) — call / WhatsApp buttons on the profile. */
   phone: string | null;
   socials: { instagram?: string; tiktok?: string };

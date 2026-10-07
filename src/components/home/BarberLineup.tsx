@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 import type { Barber } from "@/lib/domain/types";
-import { BarberCard } from "@/components/site/cards";
+import { BarberCard, Spotlight } from "@/components/site/cards";
 import { useI18n } from "@/lib/i18n/client";
 
 /**
@@ -135,7 +135,7 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
       >
         {/* Ghost trail during the entrance */}
         {phase === 1 && (
-          <Image src={barber.photoUrl!} alt="" aria-hidden width={800} height={1100} sizes="35vw" className={clsx("absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 opacity-30", side === "right" ? "ms-4" : "-ms-4")} />
+          <Image src={barber.lineupPhotoUrl ?? barber.photoUrl!} alt="" aria-hidden width={800} height={1100} sizes="35vw" className={clsx("absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 opacity-30", side === "right" ? "ms-4" : "-ms-4")} />
         )}
         {hasIntro && (
           <Image
@@ -149,7 +149,7 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
           />
         )}
         <Image
-          src={barber.photoUrl!}
+          src={barber.lineupPhotoUrl ?? barber.photoUrl!}
           alt={barber.name}
           width={800}
           height={1100}
@@ -160,6 +160,9 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
           )}
         />
       </div>
+
+      {/* Stage spotlight on hover */}
+      {phase >= 2 && <Spotlight />}
 
       {/* Gold name plate */}
       <span
