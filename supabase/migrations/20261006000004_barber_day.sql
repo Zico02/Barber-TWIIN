@@ -11,6 +11,7 @@ alter table public.services add constraint services_category_check
   check (category in ('cut', 'beard', 'combo', 'care', 'kids', 'styling', 'treatment'));
 
 alter table public.barbers add column if not exists phone text;
+alter table public.barbers add column if not exists intro_photo_url text; -- arms-relaxed photo for the lineup animation
 
 -- Allow staff to (re)place a client earlier today (walk-in already in the chair).
 drop function if exists public.assert_slot_bookable(uuid, timestamptz, timestamptz, uuid);

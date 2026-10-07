@@ -7,9 +7,10 @@ import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
 import { SectionHeading } from "@/components/ui";
 import { Ornament } from "@/components/brand/Logo";
-import { ServiceCard, BarberCard, ReviewCard } from "@/components/site/cards";
+import { ServiceCard, ReviewCard } from "@/components/site/cards";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
 import { QuickBooking } from "@/components/home/QuickBooking";
+import { BarberLineup } from "@/components/home/BarberLineup";
 import { LiveWaitPreview } from "@/components/queue/PublicQueue";
 import { HoursList, MapEmbed, ContactActions, ContactList } from "@/components/site/ShopInfo";
 import { TikTokIcon, WhatsAppIcon } from "@/components/brand/SocialIcons";
@@ -172,11 +173,7 @@ export default async function HomePage() {
       <section className="section">
         <div className="container-x">
           <SectionHeading eyebrow={t.home.barbersEyebrow} title={t.home.barbersTitle} text={t.home.barbersText} />
-          <div className="grid gap-6 md:grid-cols-3">
-            {barbers.map((b) => (
-              <BarberCard key={b.id} barber={b} t={t} />
-            ))}
-          </div>
+          <BarberLineup barbers={barbers} centreSlug="nasro" leftSlug="reda" rightSlug="ziko" />
         </div>
       </section>
 

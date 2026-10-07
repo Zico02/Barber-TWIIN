@@ -83,6 +83,7 @@ const barber = (n: number, slug: string, name: string, phone: string, specialtie
   rating: 0,
   reviewCount: 0,
   photoUrl: `/images/barbers/${slug}.webp`,
+  introPhotoUrl: null, // add /images/barbers/<slug>-intro.webp (arms relaxed) to animate the arm cross
   phone,
   socials: {},
   serviceIds: allServices,
