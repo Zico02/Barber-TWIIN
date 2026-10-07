@@ -119,7 +119,7 @@ export const en: Dict = {
     demoText: "Supabase is not configured: pick a profile to explore the dashboards.",
     customerHint: "Customer? Manage your booking without an account:",
   },
-  footer: { tagline: "Premium barbering. Organized service. No unnecessary waiting.", rights: "All rights reserved.", explore: "Explore", visit: "Visit us" },
+  footer: { tagline: "Premium barbering. Organized service.\nNo unnecessary waiting.", rights: "All rights reserved.", explore: "Explore", visit: "Visit us" },
   dash: {
     overview: "Overview", queue: "Queue & chair", agenda: "Calendar", availability: "Availability", customers: "Customers",
     services: "Services & prices", portfolio: "Portfolio", reviews: "Reviews", notifications: "Notifications",

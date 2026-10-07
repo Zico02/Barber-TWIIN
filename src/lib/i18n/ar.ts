@@ -48,5 +48,5 @@ export const ar: DeepPartial<Dict> = {
   gallery: { title: "أعمالنا", all: "الكل" },
   barbers: { title: "حلاقونا", bookWith: "احجز مع {name}" },
   services: { title: "الخدمات والأسعار" },
-  footer: { tagline: "حلاقة راقية. خدمة منظمة. بدون انتظار.", rights: "جميع الحقوق محفوظة." },
+  footer: { tagline: "حلاقة راقية. خدمة منظمة.\nبدون انتظار.", rights: "جميع الحقوق محفوظة." },
 };

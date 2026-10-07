@@ -274,7 +274,7 @@ export const fr = {
     customerHint: "Client ? Gérez votre réservation sans compte :",
   },
   footer: {
-    tagline: "Barbier premium. Service organisé. Sans attente inutile.",
+    tagline: "Barbier premium. Service organisé.\nSans attente inutile.",
     rights: "Tous droits réservés.",
     explore: "Explorer",
     visit: "Nous rendre visite",
