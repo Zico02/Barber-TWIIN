@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { Menu, X, CalendarCheck } from "lucide-react";
-import { Logo } from "@/components/brand/Logo";
+import Image from "next/image";
 import { useI18n } from "@/lib/i18n/client";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -45,7 +45,7 @@ export function Navbar({ staff }: { staff: boolean }) {
     >
       <nav className="container-x flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:h-20" aria-label="Navigation principale">
         <Link href="/" className="shrink-0" aria-label="Barber TWIIN — Accueil">
-          <Logo size="sm" className="sm:text-2xl" />
+          <Image src="/images/logo-nav.webp" alt="Barber TWIIN" width={640} height={185} priority className="h-9 w-auto sm:h-11 lg:h-12" />
         </Link>
 
         <ul className="hidden items-center gap-1 xl:flex">

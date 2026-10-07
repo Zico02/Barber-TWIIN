@@ -6,6 +6,7 @@ import { getT } from "@/lib/i18n/server";
 import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
 import { SectionHeading } from "@/components/ui";
+import { RevealGroup } from "@/components/ui/Reveal";
 import { Ornament } from "@/components/brand/Logo";
 import { ServiceCard, ReviewCard } from "@/components/site/cards";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
@@ -91,10 +92,10 @@ export default async function HomePage() {
           </div>
           <p className="eyebrow mt-2 animate-rise [animation-delay:120ms]">{t.hero.eyebrow}</p>
           {/* Symmetric tagline: Cut (top left) · Confidence (top right) · "• Style •" centred below */}
-          <h1 aria-label={[t.hero.title1, t.hero.title2, t.hero.title3].join(" · ")} className="mx-auto mt-6 flex max-w-4xl animate-rise flex-col items-center gap-1 font-display text-3xl font-medium uppercase leading-none tracking-[0.12em] [animation-delay:200ms] sm:gap-2 sm:text-5xl lg:text-6xl">
-            {/* Mirrored around the centre line: Cut ends left of centre, Confidence starts right of it, Style sits on the axis */}
+          <h1 aria-label={[t.hero.title1, t.hero.title2, t.hero.title3].join(" · ")} className="mx-auto mt-6 flex w-full max-w-5xl animate-rise flex-col items-center gap-1 font-display text-3xl font-medium uppercase leading-none tracking-[0.12em] [animation-delay:200ms] sm:gap-2 sm:text-5xl lg:text-6xl">
+            {/* Same width as the logo row: CUT starts under the scissors, CONFIDENCE starts right of centre, STYLE sits on the axis */}
             <span className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline whitespace-nowrap">
-              <span className="-me-[0.12em] justify-self-end">{t.hero.title1}</span>
+              <span className="justify-self-start ps-1 sm:ps-3 lg:ps-5">{t.hero.title1}</span>
               <span className="w-6 sm:w-10 lg:w-14" />
               <span className="justify-self-start">{t.hero.title3}</span>
             </span>
@@ -141,11 +142,11 @@ export default async function HomePage() {
       <section className="section">
         <div className="container-x">
           <SectionHeading eyebrow={t.home.servicesEyebrow} title={t.home.servicesTitle} text={t.home.servicesText} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" itemClassName="h-full" step={90}>
             {services.map((s) => (
               <ServiceCard key={s.id} service={s} t={t} />
             ))}
-          </div>
+          </RevealGroup>
           <div className="mt-10 text-center">
             <Link href="/services" className="btn-outline">
               {t.common.viewAll}
@@ -158,21 +159,21 @@ export default async function HomePage() {
       <section className="section marble marble-soft border-y border-hair">
         <div className="container-x">
           <SectionHeading eyebrow={t.home.howEyebrow} title={t.home.howTitle} />
-          <ol className="grid gap-6 md:grid-cols-4">
+          <RevealGroup as="ol" className="grid gap-6 md:grid-cols-4" step={180}>
             {t.home.how.map((step, i) => {
               const Icon = howIcons[i]!;
               return (
-                <li key={step.title} className="relative text-center">
+                <div key={step.title} className="relative text-center">
                   <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-line bg-ink text-gold">
                     <Icon className="h-6 w-6" strokeWidth={1.3} />
                   </span>
                   <span className="mt-4 block font-display text-xs tracking-[0.3em] text-gold">0{i + 1}</span>
                   <h3 className="mt-2 font-serif text-2xl">{step.title}</h3>
                   <p className="mx-auto mt-2 max-w-xs text-sm text-ivory-muted">{step.text}</p>
-                </li>
+                </div>
               );
             })}
-          </ol>
+          </RevealGroup>
         </div>
       </section>
 
