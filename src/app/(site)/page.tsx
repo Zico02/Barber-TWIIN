@@ -92,13 +92,15 @@ export default async function HomePage() {
           <p className="eyebrow mt-2 animate-rise [animation-delay:120ms]">{t.hero.eyebrow}</p>
           {/* Symmetric tagline: Cut (top left) · Confidence (top right) · "• Style •" centred below */}
           <h1 aria-label={[t.hero.title1, t.hero.title2, t.hero.title3].join(" · ")} className="mx-auto mt-6 flex max-w-4xl animate-rise flex-col items-center gap-1 font-display text-3xl font-medium uppercase leading-none tracking-[0.12em] [animation-delay:200ms] sm:gap-2 sm:text-5xl lg:text-6xl">
-            <span className="flex items-baseline justify-center gap-6 sm:gap-10 lg:gap-14">
-              <span>{t.hero.title1}</span>
-              <span className="translate-x-3 sm:translate-x-6">{t.hero.title3}</span>
+            {/* Mirrored around the centre line: Cut ends left of centre, Confidence starts right of it, Style sits on the axis */}
+            <span className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline whitespace-nowrap">
+              <span className="-me-[0.12em] justify-self-end">{t.hero.title1}</span>
+              <span className="w-6 sm:w-10 lg:w-14" />
+              <span className="justify-self-start">{t.hero.title3}</span>
             </span>
             <span className="flex items-baseline justify-center gap-4 sm:gap-6">
               <span aria-hidden className="text-gold">•</span>
-              <span className="text-gold-metal">{t.hero.title2}</span>
+              <span className="-me-[0.12em] text-gold-metal">{t.hero.title2}</span>
               <span aria-hidden className="text-gold">•</span>
             </span>
           </h1>
