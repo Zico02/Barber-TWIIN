@@ -7,7 +7,6 @@ import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
 import { SectionHeading } from "@/components/ui";
 import { Ornament } from "@/components/brand/Logo";
-import { SnipScissors } from "@/components/brand/SnipScissors";
 import { ServiceCard, ReviewCard } from "@/components/site/cards";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
 import { QuickBooking } from "@/components/home/QuickBooking";
@@ -59,11 +58,11 @@ export default async function HomePage() {
       <section className="marble relative flex min-h-[100svh] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6">
         <div className="container-x relative z-10 text-center">
           <div className="relative mx-auto max-w-5xl">
-            {/* Gold tools: the scissors snip and the clipper buzzes on load, then both bounce gently.
+            {/* Gold tools: the clipper buzzes on load, then both tools bounce gently.
                 Wrapper = position · middle = bounce · inner = snip / buzz (each owns its transform). */}
             <span aria-hidden className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2">
               <span className="block animate-bounceSoftL">
-                <SnipScissors className="h-auto w-14 -rotate-12 drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-24 lg:w-32" />
+                <Image src="/images/scissors.webp" alt="" width={400} height={640} priority className="w-14 drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-24 lg:w-32" />
               </span>
             </span>
             <span aria-hidden className="pointer-events-none absolute end-0 top-1/2 -translate-y-1/2">
@@ -95,7 +94,7 @@ export default async function HomePage() {
           <h1 aria-label={[t.hero.title1, t.hero.title2, t.hero.title3].join(" · ")} className="mx-auto mt-6 flex max-w-4xl animate-rise flex-col items-center gap-1 font-display text-3xl font-medium uppercase leading-none tracking-[0.12em] [animation-delay:200ms] sm:gap-2 sm:text-5xl lg:text-6xl">
             <span className="flex items-baseline justify-center gap-6 sm:gap-10 lg:gap-14">
               <span>{t.hero.title1}</span>
-              <span>{t.hero.title3}</span>
+              <span className="translate-x-3 sm:translate-x-6">{t.hero.title3}</span>
             </span>
             <span className="flex items-baseline justify-center gap-4 sm:gap-6">
               <span aria-hidden className="text-gold">•</span>

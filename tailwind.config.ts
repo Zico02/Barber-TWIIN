@@ -28,9 +28,6 @@ export default {
         rise: { from: { opacity: "0", transform: "translateY(14px)" }, to: { opacity: "1", transform: "none" } },
         sheen: { "0%": { backgroundPosition: "-200% 0" }, "100%": { backgroundPosition: "200% 0" } },
         pulseGold: { "0%,100%": { opacity: "1" }, "50%": { opacity: ".45" } },
-        // Scissors: each half closes toward the other around the pivot, then reopens.
-        snipA: { "0%,100%": { transform: "rotate(0deg)" }, "45%,55%": { transform: "rotate(13deg)" } },
-        snipB: { "0%,100%": { transform: "rotate(0deg)" }, "45%,55%": { transform: "rotate(-13deg)" } },
         // Clipper: short sweeps with a motor buzz, like running it through hair.
         buzz: {
           "0%": { transform: "translate(0,0) rotate(0deg)" },
@@ -52,10 +49,8 @@ export default {
         rise: "rise .7s cubic-bezier(.2,.7,.2,1) both",
         sheen: "sheen 6s linear infinite",
         pulseGold: "pulseGold 2.4s ease-in-out infinite",
-        snipA: "snipA 0.45s ease-in-out 0.4s 4 both",
-        snipB: "snipB 0.45s ease-in-out 0.4s 4 both",
         buzz: "buzz 0.6s linear 0.4s 3 both",
-        // The bounce starts once the snip / buzz intro is over.
+        // The bounce starts once the clipper intro is over.
         bounceSoftL: "bounceSoftL 4.2s ease-in-out 2.3s infinite both",
         bounceSoftR: "bounceSoftR 4.8s ease-in-out 2.3s infinite both",
       },

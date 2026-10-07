@@ -59,13 +59,19 @@ export function BarberPortrait({ barber, className, rounded }: { barber: Barber;
     >
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_35%,rgba(201,154,53,0.22),rgba(5,5,5,0.78)_68%)]" />
       {!rounded && <Spotlight />}
-      <Image
-        src={barber.photoUrl}
-        alt={barber.name}
-        fill
-        sizes="(min-width: 1024px) 33vw, 100vw"
-        className={clsx(rounded ? "object-cover object-top" : "object-contain object-bottom", "transition duration-500 group-hover:brightness-105")}
-      />
+      {rounded ? (
+        <Image src={barber.photoUrl} alt={barber.name} fill sizes="64px" className="object-cover object-top" />
+      ) : (
+        // Height-driven so every barber appears at the same scale whatever the photo's width.
+        <Image
+          src={barber.photoUrl}
+          alt={barber.name}
+          width={800}
+          height={1100}
+          sizes="(min-width: 1024px) 33vw, 100vw"
+          className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 transition duration-500 group-hover:brightness-105"
+        />
+      )}
     </div>
   );
 }
