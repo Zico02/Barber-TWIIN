@@ -97,7 +97,8 @@ const barber = (n: number, slug: string, name: string, phone: string, specialtie
 export const seedBarbers: Barber[] = [
   barber(1, "reda", "Reda", "+212626941854", ["Taper", "Mullet", "Dégradé"]),
   barber(2, "nasro", "Nasro", "+212771357199", ["Coupe", "Barbe", "Contour"]),
-  barber(3, "ziko", "Ziko", "+212771539075", ["Fade", "Burst fade", "Coupe texturée"]),
+  // Lineup animation uses a waist-level crop so Ziko matches Reda and Nasro; cards show the full photo.
+  { ...barber(3, "ziko", "Ziko", "+212771539075", ["Fade", "Burst fade", "Coupe texturée"]), lineupPhotoUrl: "/images/barbers/ziko-lineup.webp" },
 ];
 
 export const seedAvailability: AvailabilityRule[] = seedBarbers.flatMap((b) =>
