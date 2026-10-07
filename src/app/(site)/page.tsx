@@ -7,6 +7,7 @@ import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
 import { SectionHeading } from "@/components/ui";
 import { Ornament } from "@/components/brand/Logo";
+import { SnipScissors } from "@/components/brand/SnipScissors";
 import { ServiceCard, ReviewCard } from "@/components/site/cards";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
 import { QuickBooking } from "@/components/home/QuickBooking";
@@ -58,25 +59,25 @@ export default async function HomePage() {
       <section className="marble relative flex min-h-[100svh] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6">
         <div className="container-x relative z-10 text-center">
           <div className="relative mx-auto max-w-5xl">
-            {/* Gold tools gently bouncing on each side of the logo */}
-            <Image
-              src="/images/scissors.webp"
-              alt=""
-              aria-hidden
-              width={400}
-              height={640}
-              priority
-              className="pointer-events-none absolute start-0 top-1/2 w-14 -translate-y-1/2 animate-bounceSoftL drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-24 lg:w-32"
-            />
-            <Image
-              src="/images/clipper.webp"
-              alt=""
-              aria-hidden
-              width={640}
-              height={481}
-              priority
-              className="pointer-events-none absolute end-0 top-1/2 w-20 -translate-y-1/2 animate-bounceSoftR drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-32 lg:w-44"
-            />
+            {/* Gold tools: the scissors snip and the clipper buzzes on load, then both bounce gently.
+                Wrapper = position · middle = bounce · inner = snip / buzz (each owns its transform). */}
+            <span aria-hidden className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2">
+              <span className="block animate-bounceSoftL">
+                <SnipScissors className="h-auto w-14 -rotate-12 drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-24 lg:w-32" />
+              </span>
+            </span>
+            <span aria-hidden className="pointer-events-none absolute end-0 top-1/2 -translate-y-1/2">
+              <span className="block animate-bounceSoftR">
+                <Image
+                  src="/images/clipper.webp"
+                  alt=""
+                  width={640}
+                  height={481}
+                  priority
+                  className="w-20 animate-buzz drop-shadow-[0_10px_25px_rgba(201,154,53,0.35)] sm:w-32 lg:w-44"
+                />
+              </span>
+            </span>
             <div className="animate-rise px-12 sm:px-24 lg:px-36">
               <Image
                 src="/images/logo-transparent.webp"
@@ -90,12 +91,17 @@ export default async function HomePage() {
             </div>
           </div>
           <p className="eyebrow mt-2 animate-rise [animation-delay:120ms]">{t.hero.eyebrow}</p>
-          <h1 className="mx-auto mt-6 flex max-w-4xl animate-rise flex-wrap items-center justify-center gap-x-4 gap-y-2 font-display text-3xl font-medium uppercase tracking-[0.12em] [animation-delay:200ms] sm:gap-x-7 sm:text-5xl lg:text-6xl">
-            <span>{t.hero.title1}</span>
-            <span aria-hidden className="text-gold">•</span>
-            <span className="text-gold-metal">{t.hero.title2}</span>
-            <span aria-hidden className="text-gold">•</span>
-            <span>{t.hero.title3}</span>
+          {/* Symmetric tagline: Cut (top left) · Confidence (top right) · "• Style •" centred below */}
+          <h1 aria-label={[t.hero.title1, t.hero.title2, t.hero.title3].join(" · ")} className="mx-auto mt-6 flex max-w-4xl animate-rise flex-col items-center gap-1 font-display text-3xl font-medium uppercase leading-none tracking-[0.12em] [animation-delay:200ms] sm:gap-2 sm:text-5xl lg:text-6xl">
+            <span className="flex items-baseline justify-center gap-6 sm:gap-10 lg:gap-14">
+              <span>{t.hero.title1}</span>
+              <span>{t.hero.title3}</span>
+            </span>
+            <span className="flex items-baseline justify-center gap-4 sm:gap-6">
+              <span aria-hidden className="text-gold">•</span>
+              <span className="text-gold-metal">{t.hero.title2}</span>
+              <span aria-hidden className="text-gold">•</span>
+            </span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl animate-rise text-base leading-relaxed text-ivory-muted [animation-delay:280ms] sm:text-lg">{t.hero.text}</p>
           <div className="mt-9 flex animate-rise flex-col items-center justify-center gap-3 [animation-delay:360ms] sm:flex-row">

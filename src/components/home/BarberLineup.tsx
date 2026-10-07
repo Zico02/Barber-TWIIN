@@ -121,6 +121,8 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
         side === "right" && "-ms-[6%]",
       )}
     >
+      {/* Soft stage glow behind the barber on hover */}
+      {phase >= 2 && <Spotlight />}
       <div
         className={clsx(
           "relative w-full transition-all ease-out",
@@ -160,9 +162,6 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
           )}
         />
       </div>
-
-      {/* Stage spotlight on hover */}
-      {phase >= 2 && <Spotlight />}
 
       {/* Gold name plate */}
       <span

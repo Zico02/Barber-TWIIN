@@ -38,24 +38,14 @@ export function ServiceCard({ service, t, compact }: { service: Service; t: Dict
   );
 }
 
-/** Gold stage spotlight shown on hover (parent needs the `group` class). */
+/** Soft gold stage glow behind the barber on hover — same light as the lineup stage (parent needs `group`). */
 export function Spotlight() {
   return (
-    <>
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-10 opacity-0 mix-blend-screen transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background:
-            "conic-gradient(from 180deg at 50% -10%, transparent 0deg 154deg, rgba(255,232,180,0.28) 166deg, rgba(255,240,205,0.5) 180deg, rgba(255,232,180,0.28) 194deg, transparent 206deg 360deg)",
-        }}
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{ background: "radial-gradient(ellipse 50% 32% at 50% 20%, rgba(240,200,110,0.35), transparent 70%), radial-gradient(ellipse 50% 12% at 50% 99%, rgba(240,200,110,0.55), transparent 70%)" }}
-      />
-    </>
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      style={{ background: "radial-gradient(ellipse 60% 55% at 50% 42%, rgba(201,154,53,0.30), rgba(201,154,53,0.10) 45%, transparent 70%)" }}
+    />
   );
 }
 
@@ -68,14 +58,14 @@ export function BarberPortrait({ barber, className, rounded }: { barber: Barber;
       style={{ backgroundImage: "url(/images/marble.webp)", backgroundSize: "260%", backgroundPosition: cropFor(barber.slug) }}
     >
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_35%,rgba(201,154,53,0.22),rgba(5,5,5,0.78)_68%)]" />
+      {!rounded && <Spotlight />}
       <Image
         src={barber.photoUrl}
         alt={barber.name}
         fill
         sizes="(min-width: 1024px) 33vw, 100vw"
-        className={clsx(rounded ? "object-cover object-top" : "object-contain object-bottom", "transition duration-500 group-hover:brightness-110")}
+        className={clsx(rounded ? "object-cover object-top" : "object-contain object-bottom", "transition duration-500 group-hover:brightness-105")}
       />
-      {!rounded && <Spotlight />}
     </div>
   );
 }
