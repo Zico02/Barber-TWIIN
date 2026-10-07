@@ -44,7 +44,7 @@ export const en: Dict = {
       { title: "Arrive on time, no waiting", text: "You get a reference to manage your appointment." },
     ],
     liveEyebrow: "Live", liveTitle: "Real-time waiting", liveText: "Walking in? Check the estimated wait before you come.", liveCta: "See the waiting list",
-    reviewsEyebrow: "Testimonials", reviewsTitle: "Customer reviews", infoEyebrow: "The shop", infoTitle: "Come and see us",
+    reviewsEyebrow: "Testimonials", reviewsTitle: "Customer reviews", reviewsEmpty: "Your opinion matters", reviewsHint: "After your visit, open your booking and share your experience. Reviews are published after approval.", reviewsCta: "Leave a review", infoEyebrow: "The shop", infoTitle: "Come and see us",
     hoursTitle: "Opening hours", followUs: "Follow us", ctaTitle: "Your next cut is waiting.", ctaText: "Book in under two minutes. No unnecessary waiting.",
   },
   booking: {

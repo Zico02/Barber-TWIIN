@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarCheck, Sparkles, Scissors, CalendarDays, Clock4, Instagram, Facebook } from "lucide-react";
-import { getRepo } from "@/lib/repo";
+import { Quote, CalendarCheck, Sparkles, Scissors, CalendarDays, Clock4, Instagram, Facebook } from "lucide-react";
+import { getRepo, isDemoMode } from "@/lib/repo";
 import { getT } from "@/lib/i18n/server";
 import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
@@ -25,7 +25,7 @@ export default async function HomePage() {
     repo.listServices(),
     repo.listBarbers(),
     repo.listPortfolio(),
-    repo.listReviews({ status: "approved", featured: true }),
+    repo.listReviews({ status: "approved" }),
     getPublicQueue().catch(() => null),
   ]);
   const barberNames = Object.fromEntries(barbers.map((b) => [b.id, b.name]));
@@ -134,7 +134,7 @@ export default async function HomePage() {
         <div className="container-x">
           <SectionHeading eyebrow={t.home.servicesEyebrow} title={t.home.servicesTitle} text={t.home.servicesText} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {services.slice(0, 4).map((s) => (
+            {services.map((s) => (
               <ServiceCard key={s.id} service={s} t={t} />
             ))}
           </div>
@@ -201,20 +201,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Reviews ── */}
-      {reviews.length > 0 && (
-        <section className="section">
-          <div className="container-x">
-            <SectionHeading eyebrow={t.home.reviewsEyebrow} title={t.home.reviewsTitle} />
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {reviews.slice(0, 4).map((r) => (
-                <ReviewCard key={r.id} review={r} barberName={barberNames[r.barberId]} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── Shop info & location ── */}
       <section className="section border-t border-hair" id="contact">
         <div className="container-x">
@@ -245,13 +231,47 @@ export default async function HomePage() {
                 { href: shop.socials.tiktok, icon: <TikTokIcon className="h-5 w-5" />, label: "TikTok" },
                 { href: shop.socials.facebook, icon: <Facebook className="h-5 w-5" />, label: "Facebook" },
                 { href: whatsappLink(shop.whatsapp), icon: <WhatsAppIcon className="h-5 w-5" />, label: "WhatsApp" },
-              ].filter((s) => s.href).map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="flex h-12 w-12 items-center justify-center rounded-full border border-line text-gold transition hover:bg-gold/10 hover:text-gold-light">
-                  {s.icon}
-                </a>
-              ))}
+              ].map((s) =>
+                s.href ? (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="flex h-12 w-12 items-center justify-center rounded-full border border-line text-gold transition hover:bg-gold/10 hover:text-gold-light">
+                    {s.icon}
+                  </a>
+                ) : (
+                  // Link not configured yet (shop.socials) — same look, not clickable.
+                  <span key={s.label} title={`${s.label} — bientôt`} aria-label={s.label} className="flex h-12 w-12 items-center justify-center rounded-full border border-line text-gold">
+                    {s.icon}
+                  </span>
+                ),
+              )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Reviews (real, approved reviews only) ── */}
+      <section className="section border-t border-hair">
+        <div className="container-x">
+          <SectionHeading eyebrow={t.home.reviewsEyebrow} title={t.home.reviewsTitle} />
+          {reviews.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              {reviews.slice(0, 4).map((r) => (
+                <ReviewCard key={r.id} review={r} barberName={barberNames[r.barberId]} />
+              ))}
+            </div>
+          ) : null}
+          {reviews.length > 0 && isDemoMode() && (
+            <p className="mt-6 text-center text-xs text-ivory-dim">Avis d&apos;exemple (mode démo) — remplacés par les vrais avis clients une fois le site en ligne.</p>
+          )}
+          {reviews.length === 0 && (
+            <div className="card mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center">
+              <Quote className="h-10 w-10 text-gold/40" />
+              <p className="mt-4 font-serif text-2xl text-ivory">{t.home.reviewsEmpty}</p>
+              <p className="mt-2 max-w-md text-sm text-ivory-muted">{t.home.reviewsHint}</p>
+              <Link href="/ma-reservation" className="btn-outline mt-6">
+                {t.home.reviewsCta}
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

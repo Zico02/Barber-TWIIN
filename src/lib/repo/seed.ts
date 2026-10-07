@@ -321,6 +321,30 @@ export function buildDemoData(now = new Date()): DemoData {
       a.queue = { id: `q-${a.id}`, appointmentId: a.id, ticketNumber: n, ticketCode: ticketCode(n), arrivedAt: a.arrivedAt!, priority: 0, bumpMinutes: 0, waitAdjustMinutes: 0 };
     });
 
-  // No sample reviews: real reviews come from clients after their visit.
-  return { customers, appointments, exceptions, reviews: [], ticketCounter: counter };
+  // Sample reviews — DEMO MODE ONLY (in-memory store). They are not in supabase/seed.sql,
+  // so production only ever shows real, approved client reviews.
+  const comments = [
+    "Contours au rasoir d'une précision rare. Le meilleur salon du quartier.",
+    "Le système de file d'attente en direct est génial, je suis arrivé pile à l'heure. Coupe au top.",
+    "Enfin un barbier qui écoute. Résultat impeccable et le soin du visage est un vrai moment de détente.",
+    "Dégradé parfait, ambiance classe et surtout aucune attente grâce à la réservation. Je recommande.",
+  ];
+  const completed = appointments.filter((a) => a.status === "completed" && a.barberId);
+  const reviews: Review[] = comments.map((comment, i) => {
+    const a = completed[(i * 17) % completed.length]!;
+    const [first, last] = a.customerName.split(" ");
+    return {
+      id: `rv-demo-${i + 1}`,
+      appointmentId: a.id,
+      barberId: seedBarbers[i % seedBarbers.length]!.id,
+      authorName: `${first} ${last?.[0] ?? ""}.`,
+      ratings: { barber: 5, quality: 5, waiting: 5, cleanliness: 5, overall: 5 },
+      comment,
+      status: "approved",
+      featured: true,
+      createdAt: a.completedAt ?? a.createdAt,
+    };
+  });
+
+  return { customers, appointments, exceptions, reviews, ticketCounter: counter };
 }
