@@ -3,16 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
-import { Phone } from "lucide-react";
 import type { Barber } from "@/lib/domain/types";
-import { whatsappLink } from "@/lib/domain/phone";
-import { WhatsAppIcon } from "@/components/brand/SocialIcons";
+import { BarberCard } from "@/components/site/cards";
 import { useI18n } from "@/lib/i18n/client";
 
 /**
  * "Starting lineup" reveal, like a football TV line-up:
  *   1. the centre barber fades in as a ghost, becomes solid, name plate slides in, then crosses his arms;
- *   2. the two others appear on his sides at the same time and do the same.
+ *   2. the two others appear on his sides at the same time and do the same;
+ *   3. the lineup fades out and turns into the regular barber cards.
  * The arm cross uses `introPhotoUrl` (arms relaxed) → `photoUrl` (arms crossed) when available;
  * otherwise a short "settle into pose" motion is used.
  */
@@ -21,6 +20,8 @@ type Phase = 0 | 1 | 2 | 3; // 0 hidden · 1 ghost · 2 solid + plate · 3 arms 
 const TIMELINE = {
   centre: { ghost: 200, solid: 750, cross: 1500 },
   sides: { ghost: 2100, solid: 2650, cross: 3400 },
+  out: 4900, // hold the full lineup, then fade it out…
+  cards: 5400, // …and reveal the barber cards
 };
 
 export function BarberLineup({ barbers, centreSlug, leftSlug, rightSlug }: { barbers: Barber[]; centreSlug: string; leftSlug: string; rightSlug: string }) {
@@ -34,12 +35,14 @@ export function BarberLineup({ barbers, centreSlug, leftSlug, rightSlug }: { bar
   const mid = by(centreSlug);
   const right = by(rightSlug);
 
+  // After the lineup: 'out' fades the stage away, 'cards' shows the barber cards.
+  const [stageState, setStageState] = useState<"lineup" | "out" | "cards">("lineup");
+
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setCentre(3);
-      setSides(3);
+      setStageState("cards");
       return;
     }
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -51,6 +54,8 @@ export function BarberLineup({ barbers, centreSlug, leftSlug, rightSlug }: { bar
       at(TIMELINE.sides.ghost, () => setSides(1));
       at(TIMELINE.sides.solid, () => setSides(2));
       at(TIMELINE.sides.cross, () => setSides(3));
+      at(TIMELINE.out, () => setStageState("out"));
+      at(TIMELINE.cards, () => setStageState("cards"));
     };
     const io = new IntersectionObserver(
       ([e]) => {
@@ -70,8 +75,21 @@ export function BarberLineup({ barbers, centreSlug, leftSlug, rightSlug }: { bar
 
   if (!left || !mid || !right) return null;
 
+  if (stageState === "cards") {
+    // Cards in reading order (Reda, Nasro, Ziko), rising one after another.
+    return (
+      <div className="grid gap-6 md:grid-cols-3">
+        {[left, mid, right].map((b, i) => (
+          <div key={b.id} className="animate-rise" style={{ animationDelay: `${i * 140}ms` }}>
+            <BarberCard barber={b} t={t} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div ref={stage} className="relative">
+    <div ref={stage} className={clsx("relative transition-all duration-500", stageState === "out" && "scale-[0.97] opacity-0")}>
       {/* Stage: gold "pitch" lines + spotlight */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[18%] h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
       <div className="pointer-events-none absolute left-1/2 top-[8%] h-[70%] w-[min(520px,70%)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(201,154,53,0.18),transparent_65%)]" />
@@ -80,33 +98,6 @@ export function BarberLineup({ barbers, centreSlug, leftSlug, rightSlug }: { bar
         <Player barber={left} phase={sides} side="left" />
         <Player barber={mid} phase={centre} side="centre" />
         <Player barber={right} phase={sides} side="right" />
-      </div>
-
-      {/* Actions appear once the lineup is complete */}
-      <div className={clsx("mx-auto mt-8 grid max-w-4xl grid-cols-3 gap-2 transition-all duration-700 sm:gap-4", sides === 3 ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0")}>
-        {[left, mid, right].map((b) => (
-          <div key={b.id} className="flex flex-col items-center gap-2 text-center">
-            <Link href={`/reservation?barber=${b.id}`} className="btn-gold btn-sm w-full max-w-[220px] px-2 text-[11px] sm:text-xs">
-              <span className="sm:hidden">{t.nav.booking}</span>
-              <span className="hidden sm:inline">{t.common.bookNow}</span>
-            </Link>
-            <div className="flex gap-1.5">
-              <Link href={`/barbiers/${b.slug}`} className="btn-ghost btn-sm hidden px-2 text-[11px] sm:inline-flex">
-                {t.barbers.profile}
-              </Link>
-              {b.phone && (
-                <>
-                  <a href={`tel:${b.phone}`} className="btn-ghost btn-sm px-2" aria-label={`Appeler ${b.name}`}>
-                    <Phone className="h-3.5 w-3.5" />
-                  </a>
-                  <a href={whatsappLink(b.phone)} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm px-2" aria-label={`WhatsApp ${b.name}`}>
-                    <WhatsAppIcon className="h-3.5 w-3.5" />
-                  </a>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
