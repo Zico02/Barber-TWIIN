@@ -22,6 +22,19 @@
     background-color: var(--bg);
   }
   html[dir="rtl"] body { @apply font-arabic; }
+  /* Black marble with gold veins behind every page (fixed, so it doesn't repeat while scrolling).
+     The dark veil keeps text readable over the veins. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 45%, rgba(5, 5, 5, 0.55), rgba(5, 5, 5, 0.25) 75%),
+      linear-gradient(180deg, rgba(5, 5, 5, 0.35), rgba(5, 5, 5, 0.5)),
+      url("/images/marble.webp") center / cover no-repeat;
+  }
   h1, h2, h3, h4 { @apply font-serif text-ivory; letter-spacing: -0.01em; }
   ::selection { background: rgba(201, 154, 53, 0.35); color: #fff; }
   :focus-visible { outline: 1px solid var(--gold-light); outline-offset: 3px; }

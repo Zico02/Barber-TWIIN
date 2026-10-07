@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     customers: true,
   };
   return (
-    <div className="min-h-dvh bg-ink lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[260px_1fr]">
       <Sidebar name={session.name} role={session.role} perms={perms} />
       <div className="min-w-0">
         {isDemoMode() && <div className="border-b border-gold/20 bg-gold/[0.06] px-4 py-2 text-center text-xs text-gold-light">{t.dash.demoBanner}</div>}
