@@ -126,7 +126,8 @@ function Player({ barber, phase, side }: { barber: Barber; phase: Phase; side: "
       <div
         className={clsx(
           "relative w-full transition-all ease-out",
-          centre ? "h-[92%]" : "h-[80%]",
+          // Ziko's photo is framed tighter, so he gets a slightly taller box to match Reda's height.
+          centre ? "h-[92%]" : barber.slug === "ziko" ? "h-[86%]" : "h-[80%]",
           phase === 0 && `opacity-0 ${from} blur-sm duration-0`,
           phase === 1 && "translate-x-0 opacity-40 blur-[2px] brightness-150 duration-500",
           phase >= 2 && "translate-x-0 opacity-100 blur-0 brightness-100 duration-500",

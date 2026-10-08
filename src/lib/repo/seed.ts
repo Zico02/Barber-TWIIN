@@ -101,6 +101,27 @@ export const seedBarbers: Barber[] = [
   { ...barber(3, "ziko", "Ziko", "+212771539075", ["Fade", "Burst fade", "Coupe texturée"]), lineupPhotoUrl: "/images/barbers/ziko-lineup.webp" },
 ];
 
+/**
+ * Example reviews shown on the homepage only while the shop has no real approved reviews yet.
+ * Always displayed with an "example" label; never stored in the database.
+ */
+export const SAMPLE_REVIEWS: Review[] = [
+  ["Othmane F.", "reda", "Dégradé parfait, ambiance classe et surtout aucune attente grâce à la réservation. Je recommande."],
+  ["Marwane N.", "ziko", "Enfin un barbier qui écoute. Résultat impeccable et le soin du visage est un vrai moment de détente."],
+  ["Badr B.", "nasro", "Le système de file d'attente en direct est génial, je suis arrivé pile à l'heure. Coupe au top."],
+  ["Ismail A.", "reda", "Contours au rasoir d'une précision rare. Le meilleur salon du quartier."],
+].map(([authorName, slug, comment], i) => ({
+  id: `rv-sample-${i + 1}`,
+  appointmentId: "",
+  barberId: seedBarbers.find((b) => b.slug === slug)!.id,
+  authorName: authorName!,
+  ratings: { barber: 5, quality: 5, waiting: 5, cleanliness: 5, overall: 5 },
+  comment: comment!,
+  status: "approved",
+  featured: true,
+  createdAt: "2026-10-01T12:00:00Z",
+}));
+
 export const seedAvailability: AvailabilityRule[] = seedBarbers.flatMap((b) =>
   [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ id: `r-${b.slug}-${weekday}`, barberId: b.id, weekday, start: OPEN, end: CLOSE, breaks: [LUNCH] })),
 );

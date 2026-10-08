@@ -111,7 +111,7 @@ export const fr = {
     reviewsEyebrow: "Ils en parlent",
     reviewsTitle: "Avis clients",
     reviewsEmpty: "Votre avis compte",
-    reviewsHint: "Après votre visite, retrouvez votre réservation et partagez votre expérience. Les avis sont publiés après validation.",
+    reviewsSample: "Avis d'exemple — remplacés par les vrais avis de nos clients dès leur publication.", reviewsHint: "Après votre visite, retrouvez votre réservation et partagez votre expérience. Les avis sont publiés après validation.",
     reviewsCta: "Laisser un avis",
     infoEyebrow: "Le salon",
     infoTitle: "Venez nous voir",

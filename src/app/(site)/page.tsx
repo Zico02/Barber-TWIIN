@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Quote, CalendarCheck, Sparkles, Scissors, CalendarDays, Clock4, Instagram, Facebook } from "lucide-react";
-import { getRepo, isDemoMode } from "@/lib/repo";
+import { getRepo } from "@/lib/repo";
+import { SAMPLE_REVIEWS } from "@/lib/repo/seed";
 import { getT } from "@/lib/i18n/server";
 import { todayInTz } from "@/lib/domain/time";
 import { getPublicQueue } from "@/lib/server/publicQueue";
@@ -30,6 +31,8 @@ export default async function HomePage() {
     repo.listReviews({ status: "approved" }),
     getPublicQueue().catch(() => null),
   ]);
+  const usingSamples = reviews.length === 0;
+  const shownReviews = (usingSamples ? SAMPLE_REVIEWS : reviews).slice(0, 4);
   const barberNames = Object.fromEntries(barbers.map((b) => [b.id, b.name]));
   const h0 = shop.hours.find((h) => h.open);
   const hoursLabel = h0 ? `${h0.open!.replace(":00", "h")} – ${h0.close!.replace(":00", "h")}` : "—";
@@ -253,30 +256,24 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Reviews (real, approved reviews only) ── */}
+      {/* ── Reviews: real approved reviews, or labelled examples until the first ones arrive ── */}
       <section className="section border-t border-hair">
         <div className="container-x">
           <SectionHeading eyebrow={t.home.reviewsEyebrow} title={t.home.reviewsTitle} />
-          {reviews.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {reviews.slice(0, 4).map((r) => (
-                <ReviewCard key={r.id} review={r} barberName={barberNames[r.barberId]} />
-              ))}
-            </div>
-          ) : null}
-          {reviews.length > 0 && isDemoMode() && (
-            <p className="mt-6 text-center text-xs text-ivory-dim">Avis d&apos;exemple (mode démo) — remplacés par les vrais avis clients une fois le site en ligne.</p>
-          )}
-          {reviews.length === 0 && (
-            <div className="card mx-auto flex max-w-2xl flex-col items-center px-6 py-12 text-center">
-              <Quote className="h-10 w-10 text-gold/40" />
-              <p className="mt-4 font-serif text-2xl text-ivory">{t.home.reviewsEmpty}</p>
-              <p className="mt-2 max-w-md text-sm text-ivory-muted">{t.home.reviewsHint}</p>
-              <Link href="/ma-reservation" className="btn-outline mt-6">
-                {t.home.reviewsCta}
-              </Link>
-            </div>
-          )}
+          <RevealGroup className="grid gap-5 md:grid-cols-2 lg:grid-cols-4" itemClassName="h-full">
+            {shownReviews.map((r) => (
+              <ReviewCard key={r.id} review={r} barberName={barberNames[r.barberId]} />
+            ))}
+          </RevealGroup>
+          {usingSamples && <p className="mt-6 text-center text-xs text-ivory-dim">{t.home.reviewsSample}</p>}
+          <div className="card mx-auto mt-12 flex max-w-2xl flex-col items-center px-6 py-12 text-center">
+            <Quote className="h-10 w-10 text-gold/40" />
+            <p className="mt-4 font-serif text-2xl text-ivory">{t.home.reviewsEmpty}</p>
+            <p className="mt-2 max-w-md text-sm text-ivory-muted">{t.home.reviewsHint}</p>
+            <Link href="/ma-reservation" className="btn-outline mt-6">
+              {t.home.reviewsCta}
+            </Link>
+          </div>
         </div>
       </section>
 
