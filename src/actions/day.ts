@@ -133,6 +133,9 @@ export async function setDayStatusAction(input: { id: string; status: Appointmen
       if (!a.startedAt) patch.startedAt = a.startAt && new Date(a.startAt) < new Date() ? a.startAt : now;
     }
     if (target === "cancelled") patch.cancelReason = "Annulée par le barbier";
+    // Leaving a final state (mis-tap correction): clear what it had recorded.
+    if (a.status === "completed" && target !== "completed") patch.completedAt = null;
+    if (a.status === "cancelled" && target !== "cancelled") Object.assign(patch, { cancelledAt: null, cancelReason: null, lateCancellation: false });
     if (!a.barberId && session.role === "barber") patch.barberId = session.barberId;
     const updated = await repo.updateAppointment(a.id, patch);
     await repo.addAudit({ actorId: session.userId, actorName: session.name, action: `status:${a.status}->${target}`, entity: "appointment", entityId: a.id });

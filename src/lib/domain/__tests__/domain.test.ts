@@ -204,4 +204,9 @@ test("late clients can be completed or restored", () => {
   assert.ok(canTransition("confirmed", "late"));
   assert.ok(canTransition("late", "completed"));
   assert.ok(canTransition("completed", "confirmed"));
+  // Mis-tap corrections in « Ma journée »: Terminé ⇄ Annulé ⇄ Retard
+  assert.ok(canTransition("completed", "cancelled"));
+  assert.ok(canTransition("completed", "late"));
+  assert.ok(canTransition("cancelled", "completed"));
+  assert.ok(canTransition("cancelled", "late"));
 });
