@@ -155,6 +155,19 @@ test("barber delay is added to estimates", () => {
   assert.equal(est.entries[w.id].waitMinutes, 15);
 });
 
+test("« libre dans » follows the booked end, plus the next booked client", () => {
+  const barber = { id: "b1", delayMinutes: 0 } as Barber;
+  const windows = { b1: { start: at("10:00"), end: at("20:00"), breaks: [] } };
+  // 11:00–12:30 booking, chair timer started late at 11:47, it is 12:26 → free at 12:30.
+  const shaving = appt({ status: "in_progress", source: "online", startAt: at("11:00").toISOString(), endAt: at("12:30").toISOString(), durationMinutes: 90, startedAt: at("11:47").toISOString() });
+  const alone = estimateWaits({ barbers: [barber], appointments: [shaving], windows, now: at("12:26") });
+  assert.equal(alone.barbers.b1.nextFreeMinutes, 4);
+  // Next client booked 12:30–13:00 right after → 4 + 30 min.
+  const next = appt({ status: "confirmed", source: "online", startAt: at("12:30").toISOString(), endAt: at("13:00").toISOString(), durationMinutes: 30 });
+  const chained = estimateWaits({ barbers: [barber], appointments: [shaving, next], windows, now: at("12:26") });
+  assert.equal(chained.barbers.b1.nextFreeMinutes, 34);
+});
+
 test("phone normalisation (Morocco)", () => {
   assert.equal(normalizePhone("06 12 34 56 78"), "+212612345678");
   assert.equal(normalizePhone("+212 7 12 34 56 78"), "+212712345678");

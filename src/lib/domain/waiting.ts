@@ -92,8 +92,11 @@ export function estimateWaits(params: {
 
     let t = new Date(Math.max(now.getTime(), w && now < w.start ? w.start.getTime() : now.getTime()));
     if (current) {
+      // A booked client ends at the booked end time (the barber's planning), even if the chair
+      // timer started a bit late; walk-ins end « start + duration ». Overrunning = about to free up.
       const started = new Date(current.startedAt ?? current.startAt ?? now.toISOString());
-      const remaining = Math.max(2, current.durationMinutes - minutesBetween(started, now));
+      const end = current.endAt ? new Date(current.endAt) : addMinutes(started, current.durationMinutes);
+      const remaining = Math.max(1, minutesBetween(now, end));
       t = addMinutes(now, current.status === "called" ? current.durationMinutes : remaining);
     }
     t = addMinutes(t, b.delayMinutes || 0);
@@ -164,8 +167,10 @@ export function estimateWaits(params: {
     let t = consumeUpcomingPreview(upcomingBy[b.id], cursor[b.id], 30);
     t = skipBreaks(t, 30, w.breaks);
     if (addMinutes(t, 30) > w.end) continue;
-    const m = roundWait(minutesBetween(now, t));
-    live[b.id].nextFreeMinutes = m;
+    // Exact minutes for « Libre dans X min »; the shop-wide estimate stays rounded to 5.
+    const exact = Math.max(0, Math.ceil(minutesBetween(now, t)));
+    live[b.id].nextFreeMinutes = exact;
+    const m = roundWait(exact);
     shop = shop === null ? m : Math.min(shop, m);
   }
 

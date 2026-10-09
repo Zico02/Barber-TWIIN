@@ -182,7 +182,7 @@ export const fr = {
     disclaimer: "Temps indicatif, susceptible de varier.",
     display: "Mode écran",
     walkInHint: "Sans rendez-vous ? Présentez-vous à l'accueil pour obtenir un ticket.",
-    freeIn: "Libre dans {n} min",
+    freeIn: "Libre dans {n} min", almostDone: "Presque terminé",
   },
   lookup: {
     eyebrow: "Espace client",

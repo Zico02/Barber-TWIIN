@@ -43,7 +43,9 @@ export function useAvailabilityLabel() {
         ? t.queue.break
         : b.nextFreeMinutes === 0
           ? t.queue.free
-          : b.nextFreeMinutes !== null
+          : b.status === "busy" && b.nextFreeMinutes !== null && b.nextFreeMinutes <= 1
+            ? t.queue.almostDone
+            : b.nextFreeMinutes !== null
             ? fmt(t.queue.freeIn, { n: b.nextFreeMinutes })
             : t.queue.busy;
 }

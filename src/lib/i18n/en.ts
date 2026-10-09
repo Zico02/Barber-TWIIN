@@ -72,7 +72,7 @@ export const en: Dict = {
     barberAvailability: "Barber availability", free: "Available", busy: "Busy", break: "On break", off: "Off today",
     empty: "Nobody is waiting right now.", updated: "Updated at {time}", shopWait: "Wait for a walk-in", noWait: "No wait",
     disclaimer: "Approximate time, may vary.", display: "Display mode",
-    walkInHint: "No appointment? Come to the front desk to get a ticket.", freeIn: "Free in {n} min",
+    walkInHint: "No appointment? Come to the front desk to get a ticket.", freeIn: "Free in {n} min", almostDone: "Almost done",
   },
   lookup: {
     eyebrow: "Customer area", title: "Find my booking", subtitle: "Enter your reference and the phone number used when booking.",
