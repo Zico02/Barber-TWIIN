@@ -33,10 +33,26 @@ export function WaitBadge({ minutes, className }: { minutes: number | null; clas
   );
 }
 
+/** « Disponible » / « Libre dans 25 min » / « Pause » / « Absent » — same wording on every public screen. */
+export function useAvailabilityLabel() {
+  const { t } = useI18n();
+  return (b: PublicQueueDTO["barbers"][number]) =>
+    b.status === "off"
+      ? t.queue.off
+      : b.status === "break"
+        ? t.queue.break
+        : b.nextFreeMinutes === 0
+          ? t.queue.free
+          : b.nextFreeMinutes !== null
+            ? fmt(t.queue.freeIn, { n: b.nextFreeMinutes })
+            : t.queue.busy;
+}
+
 /** Compact preview used on the homepage. */
 export function LiveWaitPreview({ initial }: { initial: PublicQueueDTO | null }) {
   const { t } = useI18n();
   const { data } = useLiveQueue(initial, 30_000);
+  const availability = useAvailabilityLabel();
   return (
     <div className="card p-6 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-6">
@@ -60,9 +76,7 @@ export function LiveWaitPreview({ initial }: { initial: PublicQueueDTO | null })
               <BarberStatusDot status={b.status} />
               {b.name}
             </span>
-            <span className="text-xs text-ivory-muted">
-              {b.status === "off" ? t.queue.off : b.status === "break" ? t.queue.break : b.nextFreeMinutes === 0 ? t.queue.free : b.nextFreeMinutes !== null ? fmt(t.queue.freeIn, { n: b.nextFreeMinutes }) : t.queue.busy}
-            </span>
+            <span className="text-xs text-ivory-muted">{availability(b)}</span>
           </li>
         ))}
       </ul>
@@ -74,6 +88,7 @@ export function LiveWaitPreview({ initial }: { initial: PublicQueueDTO | null })
 export function PublicQueue({ initial }: { initial: PublicQueueDTO | null }) {
   const { t } = useI18n();
   const { data, error } = useLiveQueue(initial);
+  const availability = useAvailabilityLabel();
   if (!data) return null;
   const serving = data.barbers.filter((b) => b.current);
   return (
@@ -98,7 +113,7 @@ export function PublicQueue({ initial }: { initial: PublicQueueDTO | null }) {
                   <BarberStatusDot status={b.status} /> {b.name}
                 </p>
                 <p className="mt-1 text-xs text-ivory-muted">
-                  {t.queue[b.status]}
+                  {availability(b)}
                   {b.delayMinutes > 0 && b.status !== "off" ? ` · +${b.delayMinutes} min` : ""}
                 </p>
                 {b.current && (

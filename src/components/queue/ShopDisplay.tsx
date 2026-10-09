@@ -6,17 +6,26 @@ import type { PublicQueueDTO } from "@/lib/server/publicQueue";
 import { useLiveQueue } from "@/components/site/useLiveQueue";
 import { useI18n } from "@/lib/i18n/client";
 import { Logo, Ornament } from "@/components/brand/Logo";
-import { BarberStatusDot, WaitBadge } from "./PublicQueue";
-import { formatTime } from "@/lib/domain/time";
-import { ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
+import { BarberStatusDot, WaitBadge, useAvailabilityLabel } from "./PublicQueue";
+import { formatTime, SHOP_TZ } from "@/lib/domain/time";
+import { FlippingHourglass, ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
 
 /** TV / tablet mode for the shop: large type, auto-refresh, no personal data. */
 export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
   const { t } = useI18n();
   const { data } = useLiveQueue(initial, 10_000);
+  const availability = useAvailabilityLabel();
   const [clock, setClock] = useState(() => formatTime(new Date()));
+  // Shop-time clock with seconds, shown on each « en cours » card (empty until mounted to avoid a hydration mismatch).
+  const [clockSec, setClockSec] = useState("");
   useEffect(() => {
-    const id = setInterval(() => setClock(formatTime(new Date())), 10_000);
+    const secFmt = new Intl.DateTimeFormat("fr-FR", { timeZone: SHOP_TZ, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+    const tick = () => {
+      setClock(formatTime(new Date()));
+      setClockSec(secFmt.format(new Date()));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -50,12 +59,15 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
               </div>
             ))}
             {serving.map((b) => (
-              <div key={b.id} className="relative flex flex-col items-center justify-center overflow-hidden rounded-md border border-shave/60 p-6 text-center">
+              <div key={b.id} className="relative flex min-w-0 flex-col items-center justify-center overflow-hidden rounded-md border border-shave/60 p-4 text-center lg:p-6">
                 <ShavingFill startedAt={b.current!.startedAt} durationMinutes={b.current!.durationMinutes} />
-                <span className="relative font-display text-6xl tracking-wider text-gold-metal lg:text-8xl">{b.current!.ticket ?? "RDV"}</span>
-                <span className="relative mt-3 font-serif text-2xl text-ivory lg:text-3xl">{b.name}</span>
-                <span className="relative mt-1 text-sm uppercase tracking-[0.2em] text-ivory-muted">{b.current!.service}</span>
-                <ShavingChrono startedAt={b.current!.startedAt} durationMinutes={b.current!.durationMinutes} className="relative mt-4 text-3xl lg:text-4xl" />
+                <span className="relative max-w-full break-words font-display text-[clamp(2.25rem,4.5vw,5.5rem)] leading-none tracking-wider text-gold-metal">{b.name}</span>
+                <span className="relative mt-2 text-sm uppercase tracking-[0.2em] text-ivory-muted">{b.current!.service}</span>
+                <span className="relative mt-5 inline-flex items-center gap-2 text-[clamp(1.5rem,2.8vw,3rem)] font-semibold tabular-nums text-shave-light">
+                  <FlippingHourglass className="h-[0.8em] w-[0.8em]" />
+                  <span>{clockSec}</span>
+                </span>
+                <span className="relative mt-2 text-lg text-gold-light lg:text-xl">{availability(b)}</span>
               </div>
             ))}
             {called.length + serving.length === 0 && <p className="col-span-full self-center text-center font-serif text-3xl text-ivory-muted">{t.queue.empty}</p>}
@@ -89,11 +101,10 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
                   <span className="flex items-center gap-3 font-serif text-2xl">
                     <BarberStatusDot status={b.status} /> {b.name}
                   </span>
-                  {b.current?.status === "in_progress" ? (
-                    <ShavingChrono startedAt={b.current.startedAt} durationMinutes={b.current.durationMinutes} className="text-lg" />
-                  ) : (
-                    <span className="text-sm uppercase tracking-wider text-ivory-muted">{t.queue[b.status]}</span>
-                  )}
+                  <span className="flex flex-col items-end">
+                    {b.current?.status === "in_progress" && <ShavingChrono startedAt={b.current.startedAt} durationMinutes={b.current.durationMinutes} className="text-lg" />}
+                    <span className="text-sm uppercase tracking-wider text-ivory-muted">{availability(b)}</span>
+                  </span>
                 </li>
               ))}
             </ul>
