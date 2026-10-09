@@ -11,7 +11,7 @@ export const TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
   arrived: ["waiting", "called", "in_progress", "completed", "cancelled", "no_show"],
   waiting: ["arrived", "called", "in_progress", "completed", "cancelled", "no_show"],
   called: ["waiting", "in_progress", "completed", "no_show", "cancelled"],
-  in_progress: ["completed", "called", "confirmed"],
+  in_progress: ["completed", "called", "confirmed", "late", "cancelled", "no_show"],
   // Final states stay correctable: a mis-tap on « Terminé » / « Annulé » can be switched directly.
   completed: ["in_progress", "confirmed", "late", "cancelled", "no_show"],
   cancelled: ["confirmed", "late", "completed", "no_show"], // restoring needs the slot to still be free

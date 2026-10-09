@@ -11,6 +11,7 @@ export default {
         ok: { DEFAULT: "#6F9A78", bg: "rgba(111,154,120,0.12)" },
         bad: { DEFAULT: "#B4534B", bg: "rgba(180,83,75,0.12)" },
         warn: { DEFAULT: "#D08A3C", bg: "rgba(208,138,60,0.14)" },
+        shave: { DEFAULT: "#3B8EDB", light: "#7DB9F0" },
       },
       borderColor: { line: "rgba(201,154,53,0.35)", hair: "rgba(201,154,53,0.18)" },
       fontFamily: {
@@ -42,6 +43,8 @@ export default {
           "90%": { transform: "translate(-1px,1px) rotate(-1deg)" },
           "100%": { transform: "translate(0,0) rotate(0deg)" },
         },
+        // Hourglass: rests, flips upside down, rests, flips back.
+        hourglass: { "0%,40%": { transform: "rotate(0deg)" }, "50%,90%": { transform: "rotate(180deg)" }, "100%": { transform: "rotate(360deg)" } },
         bounceSoftL: { "0%,100%": { transform: "translateY(0) rotate(-6deg)" }, "50%": { transform: "translateY(-18px) rotate(-2deg)" } },
         bounceSoftR: { "0%,100%": { transform: "translateY(-14px) rotate(8deg)" }, "50%": { transform: "translateY(6px) rotate(3deg)" } },
       },
@@ -49,6 +52,7 @@ export default {
         rise: "rise .7s cubic-bezier(.2,.7,.2,1) both",
         sheen: "sheen 6s linear infinite",
         pulseGold: "pulseGold 2.4s ease-in-out infinite",
+        hourglass: "hourglass 2.4s ease-in-out infinite",
         buzz: "buzz 0.6s linear 0.4s 3 both",
         // The bounce starts once the clipper intro is over.
         bounceSoftL: "bounceSoftL 4.2s ease-in-out 2.3s infinite both",

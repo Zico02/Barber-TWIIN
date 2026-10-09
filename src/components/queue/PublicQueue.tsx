@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { fmt } from "@/lib/i18n";
 import { formatTime } from "@/lib/domain/time";
 import { EmptyState, StatusBadge } from "@/components/ui";
+import { ShavingChrono } from "@/components/ui/ShavingTimer";
 
 export function BarberStatusDot({ status }: { status: PublicQueueDTO["barbers"][number]["status"] }) {
   return (
@@ -101,8 +102,11 @@ export function PublicQueue({ initial }: { initial: PublicQueueDTO | null }) {
                   {b.delayMinutes > 0 && b.status !== "off" ? ` · +${b.delayMinutes} min` : ""}
                 </p>
                 {b.current && (
-                  <p className="mt-3 text-xs text-gold-light">
-                    {t.queue.nowServing} : {b.current.ticket ?? "RDV"}
+                  <p className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gold-light">
+                    <span>
+                      {t.queue.nowServing} : {b.current.ticket ?? "RDV"}
+                    </span>
+                    {b.current.status === "in_progress" && <ShavingChrono startedAt={b.current.startedAt} durationMinutes={b.current.durationMinutes} className="text-sm" />}
                   </p>
                 )}
               </li>

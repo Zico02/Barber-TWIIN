@@ -16,6 +16,7 @@ import { Dialog, ConfirmDialog } from "@/components/ui/Dialog";
 import { EmptyState, Field } from "@/components/ui";
 import { WhatsAppIcon } from "@/components/brand/SocialIcons";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { ClipperIcon, ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
 
 type Win = { start: string; end: string; breaks: { start: string; end: string; label: string }[] } | null;
 const SLOT_MIN = 30;
@@ -336,7 +337,7 @@ const STATE_STYLE: Partial<Record<AppointmentStatus, string>> = {
   late: "border-warn/70 bg-warn/[0.12]",
   cancelled: "border-bad/60 bg-bad/[0.12]",
   no_show: "border-bad/60 bg-bad/[0.12]",
-  in_progress: "border-gold/70 bg-gold/[0.08]",
+  in_progress: "border-shave/70",
 };
 
 function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appointment, s: AppointmentStatus) => void; onEdit: () => void }) {
@@ -346,13 +347,16 @@ function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appo
   const extra = a.durationMinutes - servicesMin;
   const cancelled = INACTIVE.includes(a.status);
   const btn = "flex items-center gap-1 rounded-sm border px-2.5 py-1.5 text-xs font-semibold transition";
+  const shaving = a.status === "in_progress";
   return (
     <article
       ref={setNodeRef}
       style={style}
-      className={clsx("rounded border bg-ink p-3 shadow-card sm:p-4", STATE_STYLE[a.status] ?? "border-hair", isDragging && "z-50 border-gold opacity-90")}
+      className={clsx("relative overflow-hidden rounded border bg-ink p-3 shadow-card sm:p-4", STATE_STYLE[a.status] ?? "border-hair", isDragging && "z-50 border-gold opacity-90")}
     >
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)_auto] md:items-center">
+      {/* Shaving: blue fill growing over the booked duration */}
+      {shaving && <ShavingFill startedAt={a.startedAt} durationMinutes={a.durationMinutes} />}
+      <div className="relative grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)_auto] md:items-center">
         {/* Client */}
         <div className="flex min-w-0 items-start gap-2">
           {a.startAt && (
@@ -397,6 +401,7 @@ function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appo
             <Clock3 className="h-3 w-3" />
             {a.startAt ? `${formatTime(a.startAt)} – ${formatTime(a.endAt!)} · ` : ""}
             {formatDuration(a.durationMinutes)}
+            {shaving && <ShavingChrono startedAt={a.startedAt} durationMinutes={a.durationMinutes} className="ms-2 text-sm" />}
           </p>
           {a.note && (
             <p className="mt-1.5 flex gap-1.5 text-xs text-ivory-muted">
@@ -411,6 +416,9 @@ function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appo
             {formatDH(amount(a))}
           </span>
           <div className="flex flex-wrap gap-1">
+            <button onClick={() => onStatus(a, "in_progress")} aria-pressed={shaving} className={clsx(btn, shaving ? "border-shave bg-shave text-ink" : "border-shave/50 text-shave-light hover:bg-shave/10")}>
+              <ClipperIcon className="h-3.5 w-3.5" /> Shaving
+            </button>
             <button onClick={() => onStatus(a, "completed")} aria-pressed={a.status === "completed"} className={clsx(btn, a.status === "completed" ? "border-ok bg-ok text-ink" : "border-ok/50 text-ok hover:bg-ok/10")}>
               <Check className="h-3.5 w-3.5" /> Terminé
             </button>

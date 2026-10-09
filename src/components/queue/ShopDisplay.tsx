@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { Logo, Ornament } from "@/components/brand/Logo";
 import { BarberStatusDot, WaitBadge } from "./PublicQueue";
 import { formatTime } from "@/lib/domain/time";
+import { ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
 
 /** TV / tablet mode for the shop: large type, auto-refresh, no personal data. */
 export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
@@ -41,12 +42,20 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
         <section className="card flex flex-col p-6 lg:p-8">
           <h2 className="eyebrow text-sm">{t.queue.nowServing}</h2>
           <div className="mt-6 grid flex-1 gap-4 sm:grid-cols-2">
-            {[...called.map((c) => ({ key: c.ticket, ticket: c.ticket, who: c.barberName ?? "", label: t.status.called, hot: true })),
-              ...serving.map((b) => ({ key: b.id, ticket: b.current!.ticket ?? "RDV", who: b.name, label: b.current!.service, hot: false }))].map((x) => (
-              <div key={x.key} className={clsx("flex flex-col items-center justify-center rounded-md border p-6 text-center", x.hot ? "animate-pulseGold border-gold bg-gold/10" : "border-line")}>
-                <span className="font-display text-6xl tracking-wider text-gold-metal lg:text-8xl">{x.ticket}</span>
-                <span className="mt-3 font-serif text-2xl text-ivory lg:text-3xl">{x.who}</span>
-                <span className="mt-1 text-sm uppercase tracking-[0.2em] text-ivory-muted">{x.label}</span>
+            {called.map((c) => (
+              <div key={c.ticket} className="flex animate-pulseGold flex-col items-center justify-center rounded-md border border-gold bg-gold/10 p-6 text-center">
+                <span className="font-display text-6xl tracking-wider text-gold-metal lg:text-8xl">{c.ticket}</span>
+                <span className="mt-3 font-serif text-2xl text-ivory lg:text-3xl">{c.barberName ?? ""}</span>
+                <span className="mt-1 text-sm uppercase tracking-[0.2em] text-ivory-muted">{t.status.called}</span>
+              </div>
+            ))}
+            {serving.map((b) => (
+              <div key={b.id} className="relative flex flex-col items-center justify-center overflow-hidden rounded-md border border-shave/60 p-6 text-center">
+                <ShavingFill startedAt={b.current!.startedAt} durationMinutes={b.current!.durationMinutes} />
+                <span className="relative font-display text-6xl tracking-wider text-gold-metal lg:text-8xl">{b.current!.ticket ?? "RDV"}</span>
+                <span className="relative mt-3 font-serif text-2xl text-ivory lg:text-3xl">{b.name}</span>
+                <span className="relative mt-1 text-sm uppercase tracking-[0.2em] text-ivory-muted">{b.current!.service}</span>
+                <ShavingChrono startedAt={b.current!.startedAt} durationMinutes={b.current!.durationMinutes} className="relative mt-4 text-3xl lg:text-4xl" />
               </div>
             ))}
             {called.length + serving.length === 0 && <p className="col-span-full self-center text-center font-serif text-3xl text-ivory-muted">{t.queue.empty}</p>}
@@ -80,7 +89,11 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
                   <span className="flex items-center gap-3 font-serif text-2xl">
                     <BarberStatusDot status={b.status} /> {b.name}
                   </span>
-                  <span className="text-sm uppercase tracking-wider text-ivory-muted">{t.queue[b.status]}</span>
+                  {b.current?.status === "in_progress" ? (
+                    <ShavingChrono startedAt={b.current.startedAt} durationMinutes={b.current.durationMinutes} className="text-lg" />
+                  ) : (
+                    <span className="text-sm uppercase tracking-wider text-ivory-muted">{t.queue[b.status]}</span>
+                  )}
                 </li>
               ))}
             </ul>

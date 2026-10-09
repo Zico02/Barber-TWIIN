@@ -114,7 +114,7 @@ export async function deleteDayEntryAction(id: string) {
   }, "Client supprimé");
 }
 
-/** Terminé (green) / En retard (orange) / Annulé (red); clicking the active state again restores "Confirmé". */
+/** Shaving (blue, starts the chair timer) / Terminé (green) / En retard (orange) / Annulé (red); clicking the active state again restores "Confirmé". */
 export async function setDayStatusAction(input: { id: string; status: AppointmentStatus }) {
   return safe(async () => {
     const session = await staff();
@@ -133,6 +133,9 @@ export async function setDayStatusAction(input: { id: string; status: Appointmen
       if (!a.startedAt) patch.startedAt = a.startAt && new Date(a.startAt) < new Date() ? a.startAt : now;
     }
     if (target === "cancelled") patch.cancelReason = "Annulée par le barbier";
+    // « Shaving »: the chair timer always starts now; undoing it clears the start.
+    if (target === "in_progress") patch.startedAt = now;
+    if (a.status === "in_progress" && !["in_progress", "completed"].includes(target)) patch.startedAt = null;
     // Leaving a final state (mis-tap correction): clear what it had recorded.
     if (a.status === "completed" && target !== "completed") patch.completedAt = null;
     if (a.status === "cancelled" && target !== "cancelled") Object.assign(patch, { cancelledAt: null, cancelReason: null, lateCancellation: false });
