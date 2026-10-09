@@ -27,6 +27,8 @@ export interface PublicQueueDTO {
     waitMinutes: number | null;
     isNext: boolean;
   }[];
+  /** Today's next booked clients (no ticket yet), soonest first — shown in « Suivant » without anyone tapping « Arrivé ». */
+  upcoming: { id: string; startAt: string; barberName: string | null; service: string }[];
 }
 
 export async function getPublicQueue(): Promise<PublicQueueDTO> {
@@ -58,7 +60,17 @@ export async function getPublicQueue(): Promise<PublicQueueDTO> {
   }));
   entries.sort((x, y) => (x.waitMinutes ?? 999) - (y.waitMinutes ?? 999));
 
+  // Booked clients still to come today: not in the chair, no ticket yet, not more than 15 min late.
+  const currentIds = new Set(Object.values(q.estimates.barbers).map((b) => b.current?.id).filter(Boolean));
+  const upcoming = q.appointments
+    .filter((a) => ["pending", "confirmed", "late"].includes(a.status) && a.startAt && !a.queue && !currentIds.has(a.id))
+    .filter((a) => new Date(a.startAt!).getTime() > now.getTime() - 15 * 60_000)
+    .sort((x, y) => +new Date(x.startAt!) - +new Date(y.startAt!))
+    .slice(0, 6)
+    .map((a) => ({ id: a.id, startAt: a.startAt!, barberName: name(a.barberId), service: a.services.map((s) => s.name).join(" + ") }));
+
   return {
+    upcoming,
     generatedAt: q.generatedAt,
     shopWaitMinutes: q.estimates.shopWaitMinutes,
     barbers: q.barbers.map((b) => {

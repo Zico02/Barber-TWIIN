@@ -92,7 +92,17 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
                   </span>
                 </li>
               ))}
-              {waiting.length === 0 && <li className="py-6 text-center text-ivory-muted">—</li>}
+              {/* Then the next booked clients, by time */}
+              {(data.upcoming ?? []).slice(0, Math.max(0, 6 - waiting.length)).map((u) => (
+                <li key={u.id} className="flex items-center justify-between py-3">
+                  <span className="font-display text-3xl tabular-nums tracking-wider text-gold-light lg:text-4xl">{formatTime(u.startAt)}</span>
+                  <span className="text-end">
+                    <span className="block font-serif text-xl">{u.barberName ?? t.common.anyBarber}</span>
+                    <span className="text-sm text-ivory-muted">{u.service}</span>
+                  </span>
+                </li>
+              ))}
+              {waiting.length === 0 && !data.upcoming?.length && <li className="py-6 text-center text-ivory-muted">—</li>}
             </ul>
           </div>
           <div className="card p-6 lg:p-8">
