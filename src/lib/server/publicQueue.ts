@@ -14,6 +14,7 @@ export interface PublicQueueDTO {
     status: BarberLiveStatus;
     delayMinutes: number;
     nextFreeMinutes: number | null;
+    nextFreeAt: string | null;
     queueLength: number;
     current: { ticket: string | null; service: string; status: AppointmentStatus; startedAt: string | null; durationMinutes: number } | null;
   }[];
@@ -69,6 +70,7 @@ export async function getPublicQueue(): Promise<PublicQueueDTO> {
         status: live?.status ?? "off",
         delayMinutes: b.delayMinutes,
         nextFreeMinutes: live?.nextFreeMinutes ?? null,
+        nextFreeAt: live?.nextFreeAt ?? null,
         queueLength: live?.queueLength ?? 0,
         current: cur
           ? { ticket: cur.queue?.ticketCode ?? null, service: cur.services.map((s) => s.name).join(" + "), status: cur.status, startedAt: cur.startedAt ?? null, durationMinutes: cur.durationMinutes }

@@ -14,6 +14,8 @@ export interface BarberLive {
   queueLength: number;
   /** Approx. minutes until this barber can take a NEW walk-in. */
   nextFreeMinutes: number | null;
+  /** Exact moment behind `nextFreeMinutes` (ISO), for live countdowns. */
+  nextFreeAt: string | null;
 }
 
 export interface EntryEstimate {
@@ -114,6 +116,7 @@ export function estimateWaits(params: {
       current,
       queueLength: 0,
       nextFreeMinutes: null,
+      nextFreeAt: null,
     };
   }
 
@@ -170,6 +173,7 @@ export function estimateWaits(params: {
     // Exact minutes for « Libre dans X min »; the shop-wide estimate stays rounded to 5.
     const exact = Math.max(0, Math.ceil(minutesBetween(now, t)));
     live[b.id].nextFreeMinutes = exact;
+    live[b.id].nextFreeAt = t.toISOString();
     const m = roundWait(exact);
     shop = shop === null ? m : Math.min(shop, m);
   }

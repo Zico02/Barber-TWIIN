@@ -54,6 +54,31 @@ export function ShavingFill({ startedAt, durationMinutes, className }: { started
   );
 }
 
+/** Seconds left until `targetIso`, ticking every second (null until mounted). */
+export function useCountdown(targetIso: string | null | undefined) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (!targetIso) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [targetIso]);
+  if (!targetIso || now === null) return null;
+  return Math.max(0, Math.ceil((new Date(targetIso).getTime() - now) / 1000));
+}
+
+/** Countdown in minutes:seconds (« 78:59 », never hours) to when the barber is free, with the flipping hourglass; `doneLabel` once it reaches zero. */
+export function FreeCountdown({ freeAt, doneLabel, className }: { freeAt: string | null | undefined; doneLabel: string; className?: string }) {
+  const left = useCountdown(freeAt);
+  if (left === 0) return <span className={clsx("text-gold-light", className)}>{doneLabel}</span>;
+  return (
+    <span className={clsx("inline-flex items-center gap-2 font-semibold tabular-nums text-shave-light", className)}>
+      <FlippingHourglass className="h-[0.8em] w-[0.8em]" />
+      {left === null ? "--:--" : `${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`}
+    </span>
+  );
+}
+
 /** Hair-clipper (tondeuse) icon, same stroke style as lucide icons. */
 export function ClipperIcon({ className }: { className?: string }) {
   return (

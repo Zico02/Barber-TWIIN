@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Maximize } from "lucide-react";
+import { Clock, Maximize } from "lucide-react";
 import type { PublicQueueDTO } from "@/lib/server/publicQueue";
 import { useLiveQueue } from "@/components/site/useLiveQueue";
 import { useI18n } from "@/lib/i18n/client";
 import { Logo, Ornament } from "@/components/brand/Logo";
 import { BarberStatusDot, WaitBadge, useAvailabilityLabel } from "./PublicQueue";
 import { formatTime, SHOP_TZ } from "@/lib/domain/time";
-import { FlippingHourglass, ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
+import { FreeCountdown, ShavingChrono, ShavingFill } from "@/components/ui/ShavingTimer";
 
 /** TV / tablet mode for the shop: large type, auto-refresh, no personal data. */
 export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
@@ -16,7 +16,7 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
   const { data } = useLiveQueue(initial, 10_000);
   const availability = useAvailabilityLabel();
   const [clock, setClock] = useState(() => formatTime(new Date()));
-  // Shop-time clock with seconds, shown on each « en cours » card (empty until mounted to avoid a hydration mismatch).
+  // Shop-time clock with seconds, next to « En cours » (empty until mounted to avoid a hydration mismatch).
   const [clockSec, setClockSec] = useState("");
   useEffect(() => {
     const secFmt = new Intl.DateTimeFormat("fr-FR", { timeZone: SHOP_TZ, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
@@ -49,7 +49,14 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
 
       <div className="grid flex-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
         <section className="card flex flex-col p-6 lg:p-8">
-          <h2 className="eyebrow text-sm">{t.queue.nowServing}</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="eyebrow text-sm">{t.queue.nowServing}</h2>
+            {/* Live shop time with seconds */}
+            <span className="inline-flex items-center gap-2 text-2xl font-semibold tabular-nums text-ok lg:text-3xl">
+              <Clock className="h-[0.9em] w-[0.9em]" />
+              {clockSec}
+            </span>
+          </div>
           <div className="mt-6 grid flex-1 gap-4 sm:grid-cols-2">
             {called.map((c) => (
               <div key={c.ticket} className="flex animate-pulseGold flex-col items-center justify-center rounded-md border border-gold bg-gold/10 p-6 text-center">
@@ -63,11 +70,9 @@ export function ShopDisplay({ initial }: { initial: PublicQueueDTO | null }) {
                 <ShavingFill startedAt={b.current!.startedAt} durationMinutes={b.current!.durationMinutes} />
                 <span className="relative max-w-full break-words font-display text-[clamp(2.25rem,4.5vw,5.5rem)] leading-none tracking-wider text-gold-metal">{b.name}</span>
                 <span className="relative mt-2 text-sm uppercase tracking-[0.2em] text-ivory-muted">{b.current!.service}</span>
-                <span className="relative mt-5 inline-flex items-center gap-2 text-[clamp(1.5rem,2.8vw,3rem)] font-semibold tabular-nums text-shave-light">
-                  <FlippingHourglass className="h-[0.8em] w-[0.8em]" />
-                  <span>{clockSec}</span>
-                </span>
-                <span className="relative mt-2 text-lg text-gold-light lg:text-xl">{availability(b)}</span>
+                {/* Countdown to when this barber is free (current client + any client booked right after) */}
+                <span className="relative mt-5 text-xs uppercase tracking-[0.2em] text-gold-light">{t.queue.freeInLabel}</span>
+                <FreeCountdown freeAt={b.nextFreeAt} doneLabel={t.queue.almostDone} className="relative mt-1 text-[clamp(1.5rem,2.8vw,3rem)]" />
               </div>
             ))}
             {called.length + serving.length === 0 && <p className="col-span-full self-center text-center font-serif text-3xl text-ivory-muted">{t.queue.empty}</p>}
