@@ -9,13 +9,15 @@ export default async function PortfolioAdminPage() {
   const session = await requireStaff();
   const repo = getRepo();
   const all = can(session, "portfolio:all");
-  const [{ t }, items, barbers] = await Promise.all([getT(), repo.listPortfolio(all ? undefined : { barberId: session.barberId ?? "none" }), repo.listBarbers()]);
+  // Barbers see their own work; staff not linked to a barber (reception) see everything, read-only.
+  const ownOnly = !all && !!session.barberId;
+  const [{ t }, items, barbers] = await Promise.all([getT(), repo.listPortfolio(ownOnly ? { barberId: session.barberId! } : undefined), repo.listBarbers()]);
   return (
     <>
       <DashHeader title={t.dash.portfolio} subtitle="Ajoutez vos vraies réalisations : elles apparaissent dans la galerie et sur votre profil." />
       <PortfolioManager
         items={items}
-        barbers={(all ? barbers : barbers.filter((b) => b.id === session.barberId)).map((b) => ({ id: b.id, name: b.name }))}
+        barbers={(ownOnly ? barbers.filter((b) => b.id === session.barberId) : barbers).map((b) => ({ id: b.id, name: b.name }))}
         canEdit={all || session.role === "barber"}
       />
     </>
