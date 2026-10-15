@@ -21,6 +21,7 @@ export const fr = {
     menu: "Menu",
   },
   common: {
+    fridayPrayer: "Fermé 12:00 – 13:00 · Prière du vendredi",
     bookNow: "Réserver maintenant",
     bookAppointment: "Prendre rendez-vous",
     discoverWork: "Découvrir nos réalisations",

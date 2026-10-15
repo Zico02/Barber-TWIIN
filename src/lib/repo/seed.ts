@@ -23,6 +23,8 @@ const S = (n: number) => `cccccccc-0000-4000-8000-0000000000${String(n).padStart
 export const OPEN = "11:00";
 export const CLOSE = "22:00";
 export const LUNCH = { start: "15:00", end: "16:00", label: "Pause déjeuner" };
+/** Friday (weekday 5): closed for the prayer. */
+export const FRIDAY_PRAYER = { start: "12:00", end: "13:00", label: "Prière du vendredi" };
 
 export const seedShop: Shop = {
   id: SHOP_ID,
@@ -123,7 +125,7 @@ export const SAMPLE_REVIEWS: Review[] = [
 }));
 
 export const seedAvailability: AvailabilityRule[] = seedBarbers.flatMap((b) =>
-  [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ id: `r-${b.slug}-${weekday}`, barberId: b.id, weekday, start: OPEN, end: CLOSE, breaks: [LUNCH] })),
+  [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ id: `r-${b.slug}-${weekday}`, barberId: b.id, weekday, start: OPEN, end: CLOSE, breaks: weekday === 5 ? [FRIDAY_PRAYER, LUNCH] : [LUNCH] })),
 );
 
 // Real work from the team (Reda / Ziko alternate, in the order provided).

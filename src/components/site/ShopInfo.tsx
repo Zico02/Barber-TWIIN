@@ -19,7 +19,11 @@ export function HoursList({ shop, t }: { shop: Shop; t: Dict }) {
               {isToday && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
               {t.days[d]}
             </span>
-            <span className="tabular-nums">{h?.open ? `${h.open} – ${h.close}` : t.common.closed}</span>
+            <span className="text-end tabular-nums">
+              {h?.open ? `${h.open} – ${h.close}` : t.common.closed}
+              {/* Friday: closed during the prayer */}
+              {d === 5 && h?.open && <span className="block text-xs text-ivory-dim">{t.common.fridayPrayer}</span>}
+            </span>
           </li>
         );
       })}

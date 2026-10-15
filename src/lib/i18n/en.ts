@@ -11,6 +11,7 @@ export const en: Dict = {
     dashboard: "Staff area", logout: "Log out", menu: "Menu",
   },
   common: {
+    fridayPrayer: "Closed 12:00 – 13:00 · Friday prayer",
     bookNow: "Book now", bookAppointment: "Book an Appointment", discoverWork: "Discover Our Work", viewAll: "View all",
     loading: "Loading…", back: "Back", next: "Continue", confirm: "Confirm", cancel: "Cancel", save: "Save",
     close: "Close", edit: "Edit", delete: "Delete", total: "Total", duration: "Duration", price: "Price",

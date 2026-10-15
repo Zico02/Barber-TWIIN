@@ -241,7 +241,7 @@ export function DayView(props: Props) {
                       <EntryCard key={a.id} a={a} onStatus={changeStatus} onEdit={() => setEditing({ appt: a, startAt: a.startAt! })} />
                     ))}
                     {here.some(isActive) ? null : br ? (
-                      <div className="rounded border border-dashed border-hair px-4 py-3 text-sm text-ivory-dim">☕ {br.label}</div>
+                      <div className="rounded border border-dashed border-hair px-4 py-3 text-sm text-ivory-dim">{/prière/i.test(br.label) ? "🕌" : "☕"} {br.label}</div>
                     ) : bl ? (
                       <div className="flex items-center justify-between gap-3 rounded border border-bad/40 bg-bad/10 px-4 py-3 text-sm">
                         <span className="flex items-center gap-2 text-ivory-muted">

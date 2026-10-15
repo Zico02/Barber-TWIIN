@@ -15,6 +15,7 @@ export const ar: DeepPartial<Dict> = {
     price: "الثمن", date: "التاريخ", time: "الساعة", barber: "الحلاق", services: "الخدمات", note: "ملاحظة", name: "الاسم الكامل",
     phone: "الهاتف", email: "البريد الإلكتروني", optional: "اختياري", call: "اتصال", whatsapp: "واتساب", directions: "الاتجاهات",
     today: "اليوم", tomorrow: "غدا", closed: "مغلق", approxMin: "حوالي {n} دقيقة", minutes: "د", from: "ابتداء من",
+    fridayPrayer: "مغلق 12:00 – 13:00 · صلاة الجمعة",
     error: "حدث خطأ، المرجو المحاولة من جديد.", anyBarber: "أي حلاق", reference: "المرجع",
   },
   status: {
