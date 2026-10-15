@@ -124,8 +124,11 @@ export const SAMPLE_REVIEWS: Review[] = [
   createdAt: "2026-10-01T12:00:00Z",
 }));
 
+/** Weekly rest day per barber (0 = Sunday): Nasro Monday, Reda Tuesday, Ziko Thursday. */
+export const REST_DAY: Record<string, number> = { nasro: 1, reda: 2, ziko: 4 };
+
 export const seedAvailability: AvailabilityRule[] = seedBarbers.flatMap((b) =>
-  [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ id: `r-${b.slug}-${weekday}`, barberId: b.id, weekday, start: OPEN, end: CLOSE, breaks: weekday === 5 ? [FRIDAY_PRAYER, LUNCH] : [LUNCH] })),
+  [0, 1, 2, 3, 4, 5, 6].filter((weekday) => weekday !== REST_DAY[b.slug]).map((weekday) => ({ id: `r-${b.slug}-${weekday}`, barberId: b.id, weekday, start: OPEN, end: CLOSE, breaks: weekday === 5 ? [FRIDAY_PRAYER, LUNCH] : [LUNCH] })),
 );
 
 // Real work from the team (Reda / Ziko alternate, in the order provided).
