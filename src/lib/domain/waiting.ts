@@ -67,6 +67,7 @@ export function estimateWaits(params: {
   const entries: Record<string, EntryEstimate> = {};
   const live: Record<string, BarberLive> = {};
   const cursor: Record<string, Date> = {};
+  const chairFree: Record<string, Date> = {}; // end of the client in the chair (breaks not applied)
   const upcomingBy: Record<string, Appointment[]> = {};
 
   const consumeUpcoming = (barberId: string, t: Date, dur: number) => {
@@ -97,11 +98,14 @@ export function estimateWaits(params: {
       // A booked client ends at the booked end time (the barber's planning), even if the chair
       // timer started a bit late; walk-ins end « start + duration ». Overrunning = about to free up.
       const started = new Date(current.startedAt ?? current.startAt ?? now.toISOString());
-      const end = current.endAt ? new Date(current.endAt) : addMinutes(started, current.durationMinutes);
+      // Started late → the booked end still holds; started early → it ends « start + duration ».
+      const byTimer = addMinutes(started, current.durationMinutes);
+      const end = current.endAt && new Date(current.endAt) < byTimer ? new Date(current.endAt) : byTimer;
       const remaining = Math.max(1, minutesBetween(now, end));
       t = addMinutes(now, current.status === "called" ? current.durationMinutes : remaining);
     }
     t = addMinutes(t, b.delayMinutes || 0);
+    chairFree[b.id] = t;
     if (w) t = skipBreaks(t, 1, w.breaks);
     cursor[b.id] = t;
 
@@ -163,18 +167,20 @@ export function estimateWaits(params: {
     cursor[best!.id] = addMinutes(t, a.durationMinutes);
   }
 
-  // 3) When could each barber take a new 30-minute walk-in?
+  // 3) « Libre dans X min »: when the barber's chair is empty — current client, then any client
+  //    booked back-to-back. The shop-wide wait for a walk-in also needs 30 free minutes outside breaks.
   let shop: number | null = null;
   for (const b of working) {
     const w = windows[b.id]!;
+    // Walk-ins already waiting for this barber keep him busy until the cursor; otherwise the chair frees up first.
+    const free = consumeUpcomingPreview(upcomingBy[b.id], live[b.id].queueLength ? cursor[b.id] : chairFree[b.id], 1);
+    live[b.id].nextFreeMinutes = Math.max(0, Math.ceil(minutesBetween(now, free)));
+    live[b.id].nextFreeAt = free.toISOString();
+
     let t = consumeUpcomingPreview(upcomingBy[b.id], cursor[b.id], 30);
     t = skipBreaks(t, 30, w.breaks);
     if (addMinutes(t, 30) > w.end) continue;
-    // Exact minutes for « Libre dans X min »; the shop-wide estimate stays rounded to 5.
-    const exact = Math.max(0, Math.ceil(minutesBetween(now, t)));
-    live[b.id].nextFreeMinutes = exact;
-    live[b.id].nextFreeAt = t.toISOString();
-    const m = roundWait(exact);
+    const m = roundWait(Math.max(0, minutesBetween(now, t)));
     shop = shop === null ? m : Math.min(shop, m);
   }
 

@@ -168,6 +168,20 @@ test("« libre dans » follows the booked end, plus the next booked client", () 
   assert.equal(chained.barbers.b1.nextFreeMinutes, 34);
 });
 
+test("« libre dans »: early start uses the timer, idle barbers are free right away", () => {
+  const windows = {
+    b1: { start: at("11:00"), end: at("22:00"), breaks: [{ start: at("15:00"), end: at("16:00") }] },
+    b2: { start: at("11:00"), end: at("22:00"), breaks: [{ start: at("15:00"), end: at("16:00") }] },
+  };
+  // Booked 16:00–16:30, barber starts it at 14:46 → done at 15:16, not 16:30.
+  const early = appt({ status: "in_progress", source: "online", startAt: at("16:00").toISOString(), endAt: at("16:30").toISOString(), durationMinutes: 30, startedAt: at("14:46").toISOString() });
+  const est = estimateWaits({ barbers: [{ id: "b1", delayMinutes: 0 } as Barber, { id: "b2", delayMinutes: 0 } as Barber], appointments: [early], windows, now: at("14:47") });
+  assert.equal(est.barbers.b1.nextFreeMinutes, 29);
+  // No client at all → free now, even if lunch starts in 13 minutes.
+  assert.equal(est.barbers.b2.nextFreeMinutes, 0);
+  assert.equal(est.barbers.b2.status, "free");
+});
+
 test("phone normalisation (Morocco)", () => {
   assert.equal(normalizePhone("06 12 34 56 78"), "+212612345678");
   assert.equal(normalizePhone("+212 7 12 34 56 78"), "+212712345678");
