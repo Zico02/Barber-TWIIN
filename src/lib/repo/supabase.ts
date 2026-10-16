@@ -285,6 +285,7 @@ export function createSupabaseRepo(clientFactory: () => Promise<SupabaseClient> 
         durationMinutes: "duration_minutes", startAt: "start_at", endAt: "end_at", lateCancellation: "late_cancellation",
         cancelReason: "cancel_reason", confirmedAt: "confirmed_at", arrivedAt: "arrived_at", calledAt: "called_at",
         startedAt: "started_at", completedAt: "completed_at", cancelledAt: "cancelled_at",
+        atHome: "at_home", homeAddress: "home_address", travelMinutes: "travel_minutes",
       };
       for (const [k, v] of Object.entries(patch)) if (keys[k]) map[keys[k]] = v;
       if (Object.keys(map).length) await run(c.from("appointments").update(map).eq("id", id));

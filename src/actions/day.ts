@@ -10,6 +10,8 @@ import { canTransition, timestampFor } from "@/lib/domain/status";
 import { DomainError } from "@/lib/domain/errors";
 import type { AppointmentStatus, Session } from "@/lib/domain/types";
 import type { AppointmentPatch } from "@/lib/repo/types";
+import { addMinutes } from "@/lib/domain/time";
+import { HOME_TRAVEL_MINUTES } from "@/lib/domain/pricing";
 import { safe } from "./_util";
 
 const entrySchema = z.object({
@@ -22,6 +24,8 @@ const entrySchema = z.object({
   note: z.string().trim().max(500).optional(),
   extraMinutes: z.coerce.number().int().min(0).max(240).default(0),
   finalPrice: z.coerce.number().int().min(0).max(100_000).nullable().optional(),
+  /** Home visit (reduced mobility): `startAt` is then the arrival time at the client's home. */
+  homeAddress: z.string().trim().min(8, "Adresse trop courte").max(300).optional().or(z.literal("").transform(() => undefined)),
 });
 export type DayEntryInput = z.input<typeof entrySchema>;
 
@@ -54,17 +58,21 @@ export async function saveDayEntryAction(input: DayEntryInput) {
       if (!existing) throw new DomainError("NOT_FOUND");
       assertCanActOn(session, existing);
     }
-    const saved = await repo.staffSaveAppointment({
+    // Home visit: the barber leaves before the arrival time and comes back after the service.
+    const travel = data.homeAddress ? HOME_TRAVEL_MINUTES : 0;
+    let saved = await repo.staffSaveAppointment({
       id: data.id,
       barberId: data.barberId,
       serviceIds: data.serviceIds,
-      startAt: new Date(data.startAt).toISOString(),
+      startAt: addMinutes(new Date(data.startAt), -travel).toISOString(),
       name: data.name,
       phone: data.phone ?? null,
       note: data.note || null,
-      extraMinutes: data.extraMinutes,
+      extraMinutes: data.extraMinutes + 2 * travel,
       finalPrice: data.finalPrice ?? null,
     });
+    if (travel || saved.atHome)
+      saved = await repo.updateAppointment(saved.id, { atHome: !!travel, homeAddress: data.homeAddress ?? null, travelMinutes: travel });
     if (repo.mode === "demo")
       await repo.addAudit({ actorId: session.userId, actorName: session.name, action: data.id ? "day_entry_updated" : "day_entry_created", entity: "appointment", entityId: saved.id });
     refresh();

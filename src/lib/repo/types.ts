@@ -82,6 +82,9 @@ export type AppointmentPatch = Partial<
     | "startedAt"
     | "completedAt"
     | "cancelledAt"
+    | "atHome"
+    | "homeAddress"
+    | "travelMinutes"
   >
 >;
 

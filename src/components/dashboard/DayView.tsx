@@ -7,7 +7,7 @@ import { DndContext, PointerSensor, TouchSensor, useDraggable, useDroppable, use
 import { Check, Clock3, X, Phone, Pencil, Home, MapPin, Trash2, Plus, Ban, ChevronLeft, ChevronRight, GripVertical, StickyNote, Unlock, AlertTriangle, CalendarOff } from "lucide-react";
 import type { Appointment, AppointmentStatus, BlockedPeriod, Service } from "@/lib/domain/types";
 import { addMinutes, formatDuration, formatTime } from "@/lib/domain/time";
-import { formatDH } from "@/lib/domain/pricing";
+import { formatDH, HOME_TRAVEL_MINUTES } from "@/lib/domain/pricing";
 import { formatPhone, whatsappLink } from "@/lib/domain/phone";
 import { saveDayEntryAction, moveDayEntryAction, deleteDayEntryAction, setDayStatusAction } from "@/actions/day";
 import { addBlockAction, deleteBlockAction } from "@/actions/availability";
@@ -486,9 +486,14 @@ function EntryDialog({
   const [name, setName] = useState(appt?.customerName ?? "");
   const [phone, setPhone] = useState(appt?.customerPhone ?? "");
   const [serviceIds, setServiceIds] = useState<string[]>(appt?.services.map((s) => s.serviceId) ?? []);
-  const initialExtra = appt ? Math.max(0, appt.durationMinutes - appt.services.reduce((s, x) => s + x.durationMinutes, 0)) : 0;
+  // Home visit: the dialog works with the arrival time; the trip (both ways) is added when saving.
+  const apptTravel = appt?.travelMinutes ?? 0;
+  const [home, setHome] = useState(!!appt?.atHome);
+  const [homeAddress, setHomeAddress] = useState(appt?.homeAddress ?? "");
+  const travel = home ? HOME_TRAVEL_MINUTES : 0;
+  const initialExtra = appt ? Math.max(0, appt.durationMinutes - appt.services.reduce((s, x) => s + x.durationMinutes, 0) - 2 * apptTravel) : 0;
   const [extra, setExtra] = useState(initialExtra);
-  const [time, setTime] = useState(appt?.startAt ? floorSlot(appt.startAt) : startAt);
+  const [time, setTime] = useState(appt?.startAt ? floorSlot(addMinutes(new Date(appt.startAt), apptTravel).toISOString()) : startAt);
   const [note, setNote] = useState(appt?.note ?? "");
   const [finalPrice, setFinalPrice] = useState(appt?.finalPrice?.toString() ?? "");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -496,8 +501,11 @@ function EntryDialog({
   const chosen = services.filter((s) => serviceIds.includes(s.id));
   const duration = chosen.reduce((s, x) => s + x.durationMinutes, 0) + extra;
   const price = chosen.reduce((s, x) => s + x.price, 0);
-  const fits = !!time && canPlace(time, duration || SLOT_MIN, appt?.id);
-  const options = Array.from(new Set([...(appt?.startAt ? [floorSlot(appt.startAt)] : []), ...slots])).sort();
+  // A home visit also needs the barber free for the trip before and after.
+  const placeable = (iso: string) => canPlace(addMinutes(new Date(iso), -travel).toISOString(), (duration || SLOT_MIN) + 2 * travel, appt?.id);
+  const fits = !!time && placeable(time);
+  const options = Array.from(new Set([...(appt?.startAt ? [floorSlot(addMinutes(new Date(appt.startAt), apptTravel).toISOString())] : []), ...slots])).sort();
+  const addressOk = !home || homeAddress.trim().length >= 8;
 
   const save = () =>
     start(async () => {
@@ -511,6 +519,7 @@ function EntryDialog({
         note,
         extraMinutes: extra,
         finalPrice: finalPrice === "" ? null : Number(finalPrice),
+        homeAddress: home ? homeAddress.trim() : "",
       });
       toast(r.ok ? "success" : "error", r.ok ? (appt ? "Client mis à jour" : "Client ajouté") : r.message);
       if (r.ok) onSaved();
@@ -530,9 +539,9 @@ function EntryDialog({
             </button>
           )}
           <span className="self-center text-xs text-ivory-muted">
-            {duration ? `${formatDuration(duration)} · ${formatTime(time)} – ${formatTime(addMinutes(new Date(time), duration))} · ${formatDH(price)}` : ""}
+            {duration ? `${home ? "🏠 " : ""}${formatDuration(duration)} · ${formatTime(time)} – ${formatTime(addMinutes(new Date(time), duration))} · ${formatDH(price)}` : ""}
           </span>
-          <button className="btn-gold btn-sm" disabled={pending || name.trim().length < 2 || !serviceIds.length || !fits} onClick={save}>
+          <button className="btn-gold btn-sm" disabled={pending || name.trim().length < 2 || !serviceIds.length || !fits || !addressOk} onClick={save}>
             <Check className="h-4 w-4" /> Enregistrer
           </button>
         </>
@@ -571,13 +580,35 @@ function EntryDialog({
           </div>
         </div>
 
+        <div>
+          <button
+            type="button"
+            onClick={() => setHome((v) => !v)}
+            aria-pressed={home}
+            className={clsx("flex w-full items-center gap-3 rounded-sm border px-3 py-2.5 text-start text-sm transition", home ? "border-gold bg-gold/10 text-gold-light" : "border-dashed border-line text-ivory-muted hover:border-gold")}
+          >
+            <span className={clsx("flex h-7 w-7 shrink-0 items-center justify-center rounded-full border", home ? "border-gold bg-gold text-ink" : "border-line text-gold")}>
+              {home ? <Check className="h-4 w-4" /> : <span aria-hidden>♿</span>}
+            </span>
+            <span className="flex-1">
+              <span className="block font-semibold">Coupe à domicile</span>
+              <span className="text-xs text-ivory-dim">Client à mobilité réduite · {HOME_TRAVEL_MINUTES} min de trajet aller et retour bloquées</span>
+            </span>
+          </button>
+          {home && (
+            <Field label="Adresse du client" htmlFor="de-address" error={homeAddress && !addressOk ? "Adresse trop courte" : undefined}>
+              <textarea id="de-address" className="field mt-2 min-h-[70px]" maxLength={300} value={homeAddress} onChange={(e) => setHomeAddress(e.target.value)} placeholder="Rue, numéro, immeuble, étage, quartier, ville…" />
+            </Field>
+          )}
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Heure" htmlFor="de-time" error={time && duration && !fits ? "Pas assez de place à cette heure" : undefined}>
+          <Field label={home ? "Heure d'arrivée chez le client" : "Heure"} htmlFor="de-time" error={time && duration && !fits ? "Pas assez de place à cette heure" : undefined}>
             <select id="de-time" className="field" value={time} onChange={(e) => setTime(e.target.value)}>
               {options.map((s) => (
-                <option key={s} value={s} disabled={!canPlace(s, duration || SLOT_MIN, appt?.id)}>
+                <option key={s} value={s} disabled={!placeable(s)}>
                   {formatTime(s)}
-                  {canPlace(s, duration || SLOT_MIN, appt?.id) ? "" : " — occupé"}
+                  {placeable(s) ? "" : " — occupé"}
                 </option>
               ))}
             </select>
