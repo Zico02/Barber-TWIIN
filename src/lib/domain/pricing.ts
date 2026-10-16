@@ -34,3 +34,6 @@ export function barbersForServices(barbers: Barber[], serviceIds: string[]) {
 export function formatServicePrice(s: Pick<Service, "price" | "priceFrom">, fromLabel = "dès") {
   return s.priceFrom ? `${fromLabel} ${formatDH(s.price)}` : formatDH(s.price);
 }
+
+/** Home visit: travel time blocked before AND after the service (keep in sync with book_appointment). */
+export const HOME_TRAVEL_MINUTES = 30;

@@ -1,8 +1,8 @@
 import "server-only";
 import { getRepo } from "@/lib/repo";
 import { generateSlots, getWorkingWindow, isBarberWorking, type WorkingWindow } from "@/lib/domain/slots";
-import { barbersForServices, buildServiceLines, totals } from "@/lib/domain/pricing";
-import { addDays, dayBounds, todayInTz } from "@/lib/domain/time";
+import { barbersForServices, buildServiceLines, totals, HOME_TRAVEL_MINUTES } from "@/lib/domain/pricing";
+import { addDays, addMinutes, dayBounds, todayInTz } from "@/lib/domain/time";
 import { DomainError } from "@/lib/domain/errors";
 import { estimateWaits } from "@/lib/domain/waiting";
 import type { Appointment, Barber, Slot } from "@/lib/domain/types";
@@ -20,6 +20,8 @@ export async function computeSlots(params: {
   date: string;
   serviceIds: string[];
   excludeAppointmentId?: string;
+  /** Home visit: each offered time is an arrival time; the barber must also be free for the trip both ways. */
+  homeVisit?: boolean;
 }): Promise<SlotsResult> {
   const repo = getRepo();
   const [shop, barber, services] = await Promise.all([repo.getShop(), repo.getBarber(params.barberId), repo.listServices()]);
@@ -43,7 +45,8 @@ export async function computeSlots(params: {
     repo.getBusyIntervals(barber.id, start, end, params.excludeAppointmentId),
   ]);
   const working = isBarberWorking(params.date, rules, exceptions, blocks, tz);
-  const slots = working
+  const travel = params.homeVisit ? HOME_TRAVEL_MINUTES : 0;
+  const raw = working
     ? generateSlots({
         date: params.date,
         tz,
@@ -51,12 +54,16 @@ export async function computeSlots(params: {
         exceptions,
         blocks,
         busy,
-        durationMinutes: t.duration,
+        durationMinutes: t.duration + 2 * travel,
         stepMinutes: shop.settings.slotStepMinutes,
         minLeadMinutes: shop.settings.minLeadMinutes,
         now: new Date(),
       })
     : [];
+  // Slots are computed on the departure time; customers pick the arrival time.
+  const slots = travel
+    ? raw.map((s) => ({ ...s, start: addMinutes(new Date(s.start), travel).toISOString(), end: addMinutes(new Date(s.end), -travel).toISOString() }))
+    : raw;
   return { slots, working, durationMinutes: t.duration, totalPrice: t.price };
 }
 

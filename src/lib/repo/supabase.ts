@@ -100,6 +100,7 @@ const toAppointment = (r: Row): Appointment => ({
   startAt: r.start_at, endAt: r.end_at, durationMinutes: r.duration_minutes, totalPrice: r.total_price ?? 0,
   finalPrice: r.final_price ?? null, status: r.status, source: r.source, note: r.note ?? null,
   inspirationUrl: r.inspiration_url ?? null, lateCancellation: r.late_cancellation ?? false,
+  atHome: r.at_home ?? false, homeAddress: r.home_address ?? null, travelMinutes: r.travel_minutes ?? 0,
   cancelReason: r.cancel_reason ?? null, createdAt: r.created_at, updatedAt: r.updated_at ?? r.created_at,
   confirmedAt: r.confirmed_at ?? null, arrivedAt: r.arrived_at ?? null, calledAt: r.called_at ?? null,
   startedAt: r.started_at ?? null, completedAt: r.completed_at ?? null, cancelledAt: r.cancelled_at ?? null,
@@ -259,6 +260,8 @@ export function createSupabaseRepo(clientFactory: () => Promise<SupabaseClient> 
           p_barber_id: input.barberId, p_service_ids: input.serviceIds, p_start: input.startAt,
           p_name: input.customer.name, p_phone: input.customer.phone, p_email: input.customer.email ?? null,
           p_note: input.note ?? null, p_inspiration_url: input.inspirationUrl ?? null, p_source: input.source,
+          // only sent for home visits, so regular bookings also work against the pre-0007 function
+          ...(input.homeAddress ? { p_home_address: input.homeAddress } : {}),
         }),
       )) as Row;
       // Return what the RPC created (services are embedded via a second read for the customer flow).

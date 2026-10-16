@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { DndContext, PointerSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { Check, Clock3, X, Phone, Pencil, Trash2, Plus, Ban, ChevronLeft, ChevronRight, GripVertical, StickyNote, Unlock, AlertTriangle, CalendarOff } from "lucide-react";
+import { Check, Clock3, X, Phone, Pencil, Home, MapPin, Trash2, Plus, Ban, ChevronLeft, ChevronRight, GripVertical, StickyNote, Unlock, AlertTriangle, CalendarOff } from "lucide-react";
 import type { Appointment, AppointmentStatus, BlockedPeriod, Service } from "@/lib/domain/types";
 import { addMinutes, formatDuration, formatTime } from "@/lib/domain/time";
 import { formatDH } from "@/lib/domain/pricing";
@@ -338,13 +338,14 @@ const STATE_STYLE: Partial<Record<AppointmentStatus, string>> = {
   cancelled: "border-bad/60 bg-bad/[0.12]",
   no_show: "border-bad/60 bg-bad/[0.12]",
   in_progress: "border-shave/70",
+  pending: "border-dashed border-gold/70",
 };
 
 function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appointment, s: AppointmentStatus) => void; onEdit: () => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: a.id, disabled: !a.startAt });
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
   const servicesMin = a.services.reduce((s, x) => s + x.durationMinutes, 0);
-  const extra = a.durationMinutes - servicesMin;
+  const extra = a.durationMinutes - servicesMin - 2 * (a.travelMinutes ?? 0); // the home-visit trip isn't « extra time »
   const cancelled = INACTIVE.includes(a.status);
   const btn = "flex items-center gap-1 rounded-sm border px-2.5 py-1.5 text-xs font-semibold transition";
   const shaving = a.status === "in_progress";
@@ -403,6 +404,20 @@ function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appo
             {formatDuration(a.durationMinutes)}
             {shaving && <ShavingChrono startedAt={a.startedAt} durationMinutes={a.durationMinutes} className="ms-2 text-sm" />}
           </p>
+          {a.atHome && (
+            <div className="mt-1.5 rounded border border-gold/30 bg-gold/[0.05] px-2 py-1.5 text-xs">
+              <p className="flex flex-wrap items-center gap-1.5 font-semibold text-gold-light">
+                <Home className="h-3.5 w-3.5" /> À domicile · arrivée {a.startAt ? formatTime(addMinutes(new Date(a.startAt), a.travelMinutes ?? 0)) : "—"}
+                <span className="font-normal text-ivory-dim">(trajet {a.travelMinutes ?? 0} min aller / retour inclus)</span>
+              </p>
+              {a.homeAddress && (
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.homeAddress)}`} target="_blank" rel="noopener noreferrer" className="mt-0.5 flex gap-1.5 text-ivory-muted hover:text-gold-light">
+                  <MapPin className="mt-0.5 h-3 w-3 shrink-0" /> {a.homeAddress}
+                </a>
+              )}
+              {a.status === "pending" && <p className="mt-0.5 text-warn">Demande à confirmer : appelez le client (heure & prix).</p>}
+            </div>
+          )}
           {a.note && (
             <p className="mt-1.5 flex gap-1.5 text-xs text-ivory-muted">
               <StickyNote className="mt-0.5 h-3 w-3 shrink-0 text-gold" /> {a.note}
@@ -416,6 +431,11 @@ function EntryCard({ a, onStatus, onEdit }: { a: Appointment; onStatus: (a: Appo
             {formatDH(amount(a))}
           </span>
           <div className="flex flex-wrap gap-1">
+            {a.status === "pending" && (
+              <button onClick={() => onStatus(a, "confirmed")} className={clsx(btn, "border-gold bg-gold text-ink hover:bg-gold-light")}>
+                <Check className="h-3.5 w-3.5" /> Confirmer
+              </button>
+            )}
             <button onClick={() => onStatus(a, "in_progress")} aria-pressed={shaving} className={clsx(btn, shaving ? "border-shave bg-shave text-ink" : "border-shave/50 text-shave-light hover:bg-shave/10")}>
               <ClipperIcon className="h-3.5 w-3.5" /> Shaving
             </button>

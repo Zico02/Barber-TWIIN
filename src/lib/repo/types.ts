@@ -34,6 +34,8 @@ export interface NewAppointmentInput {
   customer: { name: string; phone: string; email?: string | null };
   note?: string | null;
   inspirationUrl?: string | null;
+  /** Set → home visit: blocks HOME_TRAVEL_MINUTES before/after, arrives as « pending ». */
+  homeAddress?: string | null;
   source: "online" | "phone" | "dashboard";
 }
 

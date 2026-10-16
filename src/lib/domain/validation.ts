@@ -39,6 +39,7 @@ export const bookingSchema = z.object({
   email,
   note,
   inspirationUrl: z.string().max(2_000_000).optional(), // data URL from an inspiration photo
+  homeAddress: z.string().trim().min(8, "Adresse trop courte").max(300).optional(), // home visit (reduced mobility)
   website: z.string().max(0).optional(), // honeypot
 });
 export type BookingInput = z.input<typeof bookingSchema>;
@@ -48,6 +49,7 @@ export const slotsQuerySchema = z.object({
   date: isoDate,
   serviceIds: z.array(id).min(1).max(6),
   excludeAppointmentId: id.optional(),
+  homeVisit: z.boolean().optional(),
 });
 
 export const lookupSchema = z.object({

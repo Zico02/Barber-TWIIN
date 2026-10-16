@@ -11,7 +11,7 @@ import {
   type BookingInput,
 } from "@/lib/domain/validation";
 import { DomainError } from "@/lib/domain/errors";
-import { formatDateLong, formatTime, zonedParts } from "@/lib/domain/time";
+import { addMinutes, formatDateLong, formatTime, zonedParts } from "@/lib/domain/time";
 import { renderTemplate } from "@/lib/domain/notifications";
 import { safe } from "./_util";
 
@@ -22,10 +22,10 @@ export async function getSlotsAction(input: unknown) {
 }
 
 /** Verifies that the exact start is still offered (friendly error before the atomic insert). */
-async function assertStillAvailable(barberId: string, serviceIds: string[], startAt: string, tz: string, excludeAppointmentId?: string) {
+async function assertStillAvailable(barberId: string, serviceIds: string[], startAt: string, tz: string, excludeAppointmentId?: string, homeVisit = false) {
   const iso = new Date(startAt).toISOString();
   const date = zonedParts(new Date(iso), tz).date;
-  const { slots } = await computeSlots({ barberId, date, serviceIds, excludeAppointmentId });
+  const { slots } = await computeSlots({ barberId, date, serviceIds, excludeAppointmentId, homeVisit });
   const slot = slots.find((s) => s.start === iso);
   if (!slot?.available) {
     throw slot?.reason === "booked"
@@ -43,7 +43,8 @@ export async function createBookingAction(input: BookingInput) {
 
     const repo = getRepo();
     const shop = await repo.getShop();
-    await assertStillAvailable(data.barberId, data.serviceIds, data.startAt, shop.timezone);
+    const homeAddress = data.homeAddress || null;
+    await assertStillAvailable(data.barberId, data.serviceIds, data.startAt, shop.timezone, undefined, !!homeAddress);
 
     const appt = await repo.createAppointment({
       barberId: data.barberId,
@@ -52,14 +53,19 @@ export async function createBookingAction(input: BookingInput) {
       customer: { name: data.name, phone: data.phone, email: data.email ?? null },
       note: data.note || null,
       inspirationUrl: data.inspirationUrl ?? null,
+      homeAddress,
       source: "online",
     });
+    // Customer-facing times are the arrival at home and the end of the service (trip excluded).
+    const travel = appt.travelMinutes ?? 0;
+    const arrival = addMinutes(new Date(appt.startAt!), travel).toISOString();
+    const serviceEnd = addMinutes(new Date(appt.endAt!), -travel).toISOString();
     const barber = await repo.getBarber(data.barberId);
     const vars = {
       name: data.name.split(" ")[0],
       barber: barber?.name ?? "",
-      date: formatDateLong(appt.startAt!),
-      time: formatTime(appt.startAt!),
+      date: formatDateLong(arrival),
+      time: formatTime(arrival),
       reference: appt.reference,
       shop: shop.name,
     };
@@ -71,12 +77,14 @@ export async function createBookingAction(input: BookingInput) {
 
     return {
       reference: appt.reference,
-      startAt: appt.startAt!,
-      endAt: appt.endAt!,
+      startAt: arrival,
+      endAt: serviceEnd,
+      atHome: !!appt.atHome,
+      homeAddress: appt.homeAddress ?? null,
       barberName: barber?.name ?? "",
       services: appt.services,
       totalPrice: appt.totalPrice,
-      durationMinutes: appt.durationMinutes,
+      durationMinutes: appt.durationMinutes - 2 * travel,
       customerName: data.name,
       shopWhatsapp: shop.whatsapp,
       message,
@@ -86,17 +94,28 @@ export async function createBookingAction(input: BookingInput) {
 
 // ── Customer self-service (reference + phone) ──
 
+function homeTimes(appt: { startAt: string | null; endAt: string | null; durationMinutes: number; travelMinutes?: number }) {
+  const travel = appt.travelMinutes ?? 0;
+  if (!travel || !appt.startAt || !appt.endAt) return {};
+  return {
+    startAt: addMinutes(new Date(appt.startAt), travel).toISOString(),
+    endAt: addMinutes(new Date(appt.endAt), -travel).toISOString(),
+    durationMinutes: appt.durationMinutes - 2 * travel,
+  };
+}
+
 async function withBarber(appt: Awaited<ReturnType<ReturnType<typeof getRepo>["lookupBooking"]>>) {
   if (!appt) throw new DomainError("NOT_FOUND", "Aucune réservation ne correspond à ces informations.");
   const repo = getRepo();
   const [barber, shop] = await Promise.all([appt.barberId ? repo.getBarber(appt.barberId) : null, repo.getShop()]);
   const upcoming = !!appt.startAt && new Date(appt.startAt) > new Date() && ["pending", "confirmed"].includes(appt.status);
   return {
-    appointment: { ...appt, customerPhone: "" }, // never echo the phone back
+    // never echo the phone back; a home visit shows the arrival time and the end of the service (trip excluded)
+    appointment: { ...appt, customerPhone: "", ...homeTimes(appt) },
     barberName: barber?.name ?? null,
     serviceIds: appt.services.map((s) => s.serviceId),
     canCancel: upcoming,
-    canReschedule: upcoming,
+    canReschedule: upcoming && !appt.atHome, // a home visit is re-planned by phone
     canReview: appt.status === "completed",
     freeUntilHours: shop.settings.cancellation.freeUntilHours,
   };

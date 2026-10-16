@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Field } from "@/components/ui";
 import { Panel } from "./common";
-import { formatTime, zonedParts } from "@/lib/domain/time";
+import { formatTime, zonedParts, SHOP_TZ } from "@/lib/domain/time";
 import { WhatsAppIcon } from "@/components/brand/SocialIcons";
 
 type Day = { weekday: number; on: boolean; start: string; end: string; breaks: BreakPeriod[] };
@@ -333,7 +333,7 @@ export function AvailabilityEditor({
             <li key={c.id} className="px-3 py-2">
               <span className="text-ivory">{c.customerName}</span>
               <span className="block text-xs text-ivory-muted">
-                {new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "Africa/Casablanca" }).format(new Date(c.startAt))} · {formatTime(c.startAt)} · {c.services}
+                {new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: SHOP_TZ }).format(new Date(c.startAt))} · {formatTime(c.startAt)} · {c.services}
               </span>
             </li>
           ))}

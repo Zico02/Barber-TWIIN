@@ -82,6 +82,7 @@ export function SlotGrid({
   excludeAppointmentId,
   refreshKey = 0,
   barberNames,
+  homeVisit = false,
 }: {
   barberIds: string[];
   date: string;
@@ -91,15 +92,16 @@ export function SlotGrid({
   excludeAppointmentId?: string;
   refreshKey?: number;
   barberNames?: Record<string, string>;
+  homeVisit?: boolean;
 }) {
   const { t } = useI18n();
   const [state, setState] = useState<{ loading: boolean; slots: PickedSlot[]; working: boolean; error?: string }>({ loading: true, slots: [], working: true });
-  const key = `${barberIds.join(",")}|${date}|${serviceIds.join(",")}|${refreshKey}`;
+  const key = `${barberIds.join(",")}|${date}|${serviceIds.join(",")}|${refreshKey}|${homeVisit ? "home" : ""}`;
 
   useEffect(() => {
     let alive = true;
     setState((s) => ({ ...s, loading: true }));
-    Promise.all(barberIds.map((barberId) => getSlotsAction({ barberId, date, serviceIds, excludeAppointmentId }).then((r) => ({ barberId, r })))).then((results) => {
+    Promise.all(barberIds.map((barberId) => getSlotsAction({ barberId, date, serviceIds, excludeAppointmentId, homeVisit }).then((r) => ({ barberId, r })))).then((results) => {
       if (!alive) return;
       const merged = new Map<string, PickedSlot>();
       let working = false;

@@ -40,6 +40,9 @@ export const ar: DeepPartial<Dict> = {
     noSlots: "لا توجد مواعيد متاحة في هذا اليوم.", barberUnavailable: "الحلاق غير متوفر", yourInfo: "معلوماتك",
     confirmBtn: "تأكيد الحجز", confirmed: "تم تأكيد الحجز", slotTaken: "هذا الموعد محجوز بالفعل.", invalidPhone: "رقم هاتف غير صالح",
     totalDuration: "المدة الإجمالية", totalPrice: "الثمن الإجمالي",
+    homeTitle: "حلاقة في المنزل", homeOn: "أرغب أن يأتي الحلاق إلى منزلي",
+    homeText: "للأشخاص في وضعية إعاقة أو ذوي الحركة المحدودة: الحلاق يأتي إليكم.",
+    homeAddress: "العنوان الكامل", homePrice: "الثمن يُؤكَّد عبر الهاتف", homeBadge: "في المنزل", homeRequested: "تم إرسال الطلب",
   },
   queue: {
     title: "قائمة الانتظار", nowServing: "يُخدم الآن", next: "التالي", estimated: "الانتظار المقدر", ticket: "تذكرة",

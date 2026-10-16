@@ -1,7 +1,12 @@
 // Timezone-safe helpers. All instants are stored in UTC; wall-clock times are
-// interpreted in the shop timezone (Africa/Casablanca by default).
+// interpreted in the shop timezone (Morocco: permanent GMT+0, see SHOP_TZ).
 
-export const SHOP_TZ = "Africa/Casablanca";
+/**
+ * Morocco switched to permanent GMT+0 on 2026-09-20 (IANA tzdata 2026c). Many runtimes (Node's ICU,
+ * Postgres, older browsers) still ship older data and would apply GMT+1 to "Africa/Casablanca",
+ * so the shop uses plain UTC, which is identical everywhere.
+ */
+export const SHOP_TZ = "UTC";
 
 const fmtCache = new Map<string, Intl.DateTimeFormat>();
 function partsFormatter(tz: string) {

@@ -2,7 +2,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Check, ChevronLeft, ArrowRight, Clock, ImagePlus, X, CalendarPlus, Users } from "lucide-react";
+import { Check, ChevronLeft, ArrowRight, Clock, ImagePlus, X, CalendarPlus, Users, Accessibility, Home, Phone } from "lucide-react";
 import type { Barber, Service } from "@/lib/domain/types";
 import { useI18n } from "@/lib/i18n/client";
 import { fmt } from "@/lib/i18n";
@@ -48,6 +48,9 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
   const [note, setNote] = useState("");
   const [inspiration, setInspiration] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
+  // Home visit for clients with a disability / reduced mobility
+  const [homeVisit, setHomeVisit] = useState(false);
+  const [homeAddress, setHomeAddress] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [done, setDone] = useState<Success | null>(null);
@@ -78,6 +81,7 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
     if (name.trim().length < 2) e.name = "Nom trop court";
     if (!normalizePhone(phone)) e.phone = t.booking.invalidPhone;
     if (email && !/^\S+@\S+\.\S+$/.test(email)) e.email = "E-mail invalide";
+    if (homeVisit && homeAddress.trim().length < 8) e.homeAddress = "Adresse trop courte";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -118,6 +122,7 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
         email,
         note,
         inspirationUrl: inspiration ?? undefined,
+        homeAddress: homeVisit ? homeAddress.trim() : undefined,
         website: honeypot,
       });
       if (res.ok) {
@@ -190,6 +195,22 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
                   );
                 })}
               </ul>
+              {/* Home visit (reduced mobility) */}
+              <button
+                onClick={() => { setHomeVisit((v) => !v); setSlot(null); }}
+                aria-pressed={homeVisit}
+                className={clsx("mt-5 flex w-full items-start gap-4 rounded border p-4 text-start transition", homeVisit ? "border-gold bg-gold/[0.07]" : "border-dashed border-line hover:border-gold")}
+              >
+                <span className={clsx("flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", homeVisit ? "border-gold bg-gold text-ink" : "border-line text-gold")}>
+                  {homeVisit ? <Check className="h-5 w-5" /> : <Accessibility className="h-5 w-5" />}
+                </span>
+                <span className="flex-1">
+                  <span className="block font-serif text-xl leading-tight">{t.booking.homeTitle}</span>
+                  <span className="mt-0.5 block text-xs text-ivory-muted">{t.booking.homeText}</span>
+                  <span className="mt-1 block text-xs text-gold-light">{t.booking.homeOn}</span>
+                </span>
+                <span className="text-xs text-ivory-muted">{t.booking.homePrice}</span>
+              </button>
             </StepWrap>
           )}
 
@@ -246,7 +267,8 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
 
           {step === 2 && (
             <StepWrap title={t.booking.chooseTime} hint={`${formatDuration(totalDuration)} · ${new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`))}`}>
-              <SlotGrid barberIds={slotBarbers} date={date} serviceIds={serviceIds} value={slot?.start ?? null} onPick={setSlot} refreshKey={refreshKey} barberNames={barberNames} />
+              <SlotGrid barberIds={slotBarbers} date={date} serviceIds={serviceIds} value={slot?.start ?? null} onPick={setSlot} refreshKey={refreshKey} barberNames={barberNames} homeVisit={homeVisit} />
+              {homeVisit && <p className="mt-4 flex items-center gap-2 text-xs text-gold-light"><Home className="h-3.5 w-3.5" /> {t.booking.homeArrival} · {t.booking.homeInfo}</p>}
               {slot && slotBarbers.length > 1 && (
                 <p className="mt-4 text-sm text-ivory-muted">
                   {t.common.barber} : <span className="text-gold-light">{barberNames[slot.barberId]}</span>
@@ -269,6 +291,16 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
                 <Field label={`${t.common.email} (${t.common.optional})`} error={errors.email} htmlFor="bk-email">
                   <input id="bk-email" className="field" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </Field>
+                {homeVisit && (
+                  <div className="sm:col-span-2">
+                    <Field label={t.booking.homeAddress} error={errors.homeAddress} htmlFor="bk-address" hint={t.booking.homeAddressHint}>
+                      <textarea id="bk-address" className="field min-h-[84px]" maxLength={300} autoComplete="street-address" value={homeAddress} onChange={(e) => setHomeAddress(e.target.value)} placeholder={t.booking.homeAddressPlaceholder} />
+                    </Field>
+                    <p className="mt-2 flex items-start gap-2 rounded border border-gold/30 bg-gold/[0.05] px-3 py-2 text-xs text-ivory-muted">
+                      <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" /> {t.booking.homeInfo}
+                    </p>
+                  </div>
+                )}
                 {/* Honeypot (bots fill it, humans never see it) */}
                 <input tabIndex={-1} autoComplete="off" className="hidden" aria-hidden value={honeypot} onChange={(e) => setHoneypot(e.target.value)} name="website" />
               </div>
@@ -317,6 +349,7 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
                 price={totalPrice}
                 note={note}
                 customer={`${name} · ${phone}`}
+                homeAddress={homeVisit ? homeAddress : null}
               />
               <p className="mt-4 text-xs text-ivory-dim">{fmt(t.booking.policy, { h: freeUntilHours })}</p>
             </StepWrap>
@@ -377,6 +410,11 @@ export function BookingWizard({ services, barbers, workingDays, today, maxDaysAh
               {formatDH(totalPrice)}
             </span>
           </div>
+          {homeVisit && (
+            <p className="mt-3 flex items-center gap-2 text-xs text-gold-light">
+              <Home className="h-3.5 w-3.5" /> {t.booking.homeBadge} · {t.booking.homePrice}
+            </p>
+          )}
         </div>
       </aside>
     </div>
@@ -401,7 +439,9 @@ export function Summary({
   price,
   note,
   customer,
+  homeAddress,
 }: {
+  homeAddress?: string | null;
   barber: string;
   services: { name: string; price: number; duration: number }[];
   start: string;
@@ -419,6 +459,7 @@ export function Summary({
     [t.booking.end, formatTime(addMinutes(new Date(start), duration))],
     [t.booking.totalDuration, formatDuration(duration)],
   ];
+  if (homeAddress) rows.unshift([t.booking.homeBadge, homeAddress]);
   if (customer) rows.push([t.booking.yourInfo, customer]);
   if (note) rows.push([t.common.note, note]);
   return (
@@ -431,7 +472,10 @@ export function Summary({
       ))}
       <div className="flex items-baseline justify-between bg-gold/[0.05] px-4 py-4">
         <dt className="text-xs uppercase tracking-[0.2em] text-gold">{t.booking.totalPrice}</dt>
-        <dd className="font-serif text-3xl text-gold-metal">{formatDH(price)}</dd>
+        <dd className="text-end font-serif text-3xl text-gold-metal">
+          {formatDH(price)}
+          {homeAddress && <span className="block font-sans text-xs text-gold-light">{t.booking.homePrice}</span>}
+        </dd>
       </div>
     </dl>
   );
@@ -463,9 +507,9 @@ function BookingSuccess({ data }: { data: Success }) {
       <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-gold bg-gold/10 text-gold-light shadow-gold">
         <Check className="h-9 w-9" />
       </span>
-      <h2 className="mt-6 font-serif text-4xl sm:text-5xl">{t.booking.confirmed}</h2>
+      <h2 className="mt-6 font-serif text-4xl sm:text-5xl">{data.atHome ? t.booking.homeRequested : t.booking.confirmed}</h2>
       <p className="mx-auto mt-4 max-w-lg text-ivory-muted">
-        {fmt(t.booking.confirmedText, {
+        {fmt(data.atHome ? t.booking.homeRequestedText : t.booking.confirmedText, {
           name: data.customerName.split(" ")[0]!,
           barber: data.barberName,
           date: formatDateLong(data.startAt, locale),
@@ -484,6 +528,7 @@ function BookingSuccess({ data }: { data: Success }) {
           start={data.startAt}
           duration={data.durationMinutes}
           price={data.totalPrice}
+          homeAddress={data.homeAddress}
         />
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-3">

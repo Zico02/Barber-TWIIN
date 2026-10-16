@@ -20,7 +20,7 @@ import { ACTIVE_STATUSES } from "@/lib/domain/types";
 import { DomainError } from "@/lib/domain/errors";
 import { addMinutes, overlaps, zonedParts, minutesBetween } from "@/lib/domain/time";
 import { busyIntervals, checkRange } from "@/lib/domain/slots";
-import { buildServiceLines, totals } from "@/lib/domain/pricing";
+import { buildServiceLines, totals, HOME_TRAVEL_MINUTES } from "@/lib/domain/pricing";
 import { initials, ticketCode } from "@/lib/domain/queue";
 import { newId, newReference } from "@/lib/domain/reference";
 import type { AppointmentQuery, Repo } from "./types";
@@ -255,9 +255,12 @@ export const memoryRepo: Repo = {
       throw new DomainError("INVALID_INPUT", "Service indisponible avec ce barbier");
     const lines = buildServiceLines(services as Service[], barber);
     const t = totals(lines);
-    const start = new Date(input.startAt);
+    // Home visit: the barber leaves before the arrival time and comes back after the service.
+    const travel = input.homeAddress ? HOME_TRAVEL_MINUTES : 0;
+    const start = addMinutes(new Date(input.startAt), -travel);
+    const duration = t.duration + 2 * travel;
     // Check + insert happen synchronously → atomic within this process.
-    assertBookable(barber.id, start, t.duration);
+    assertBookable(barber.id, start, duration);
     const customer = upsertCustomer(input.customer.name, input.customer.phone, input.customer.email);
     const now = nowIso();
     const a: Appointment = {
@@ -270,18 +273,21 @@ export const memoryRepo: Repo = {
       customerEmail: customer.email,
       services: lines,
       startAt: start.toISOString(),
-      endAt: addMinutes(start, t.duration).toISOString(),
-      durationMinutes: t.duration,
+      endAt: addMinutes(start, duration).toISOString(),
+      durationMinutes: duration,
       totalPrice: t.price,
       finalPrice: null,
-      status: "confirmed",
+      status: travel ? "pending" : "confirmed",
+      atHome: !!travel,
+      homeAddress: input.homeAddress ?? null,
+      travelMinutes: travel,
       source: input.source,
       note: input.note ?? null,
       inspirationUrl: input.inspirationUrl ?? null,
       lateCancellation: false,
       createdAt: now,
       updatedAt: now,
-      confirmedAt: now,
+      confirmedAt: travel ? null : now,
       queue: null,
     };
     s.appointments.push(a);

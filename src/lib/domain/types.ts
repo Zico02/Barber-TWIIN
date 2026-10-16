@@ -224,6 +224,10 @@ export interface Appointment {
   source: AppointmentSource;
   note?: string | null;
   inspirationUrl?: string | null;
+  /** Home visit (reduced mobility): start/end include `travelMinutes` each way; the client's arrival time is start + travel. */
+  atHome?: boolean;
+  homeAddress?: string | null;
+  travelMinutes?: number;
   lateCancellation: boolean;
   cancelReason?: string | null;
   createdAt: string;
