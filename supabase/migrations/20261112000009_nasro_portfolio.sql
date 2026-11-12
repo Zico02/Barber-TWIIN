@@ -4,6 +4,7 @@ select '11111111-1111-4111-8111-111111111111', 'aaaaaaaa-0000-4000-8000-00000000
   from (values
     ('long'::text,  'Locks & low fade'::text,  '/images/cuts/cut-9.webp'::text),
     ('taper',       'Mullet taper',            '/images/cuts/cut-10.webp'),
-    ('fade',        'Burst fade bouclé',       '/images/cuts/cut-11.webp')
+    ('fade',        'Burst fade bouclé',       '/images/cuts/cut-11.webp'),
+    ('fade',        'Low fade & design',       '/images/cuts/cut-12.webp')
   ) as v(category, title, url)
  where not exists (select 1 from public.portfolio_images p where p.image_url = v.url);

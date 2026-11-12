@@ -145,6 +145,7 @@ export const seedPortfolio: PortfolioImage[] = (
     ["long", "Locks & low fade", "nasro"],
     ["taper", "Mullet taper", "nasro"],
     ["fade", "Burst fade bouclé", "nasro"],
+    ["fade", "Low fade & design", "nasro"],
   ] as const
 ).map(([category, title, slug], i) => ({
   id: `p-${i + 1}`,
